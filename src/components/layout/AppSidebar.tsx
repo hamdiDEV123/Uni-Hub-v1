@@ -29,7 +29,8 @@ const mainNav = [
 ];
 
 const adminNav = [
-  { title: 'Admin Panel', url: '/admin', icon: Shield },
+  { title: 'Admin Marketplace', url: '/admin', icon: Shield },
+  { title: 'Admin Legacy', url: '/admin/legacy', icon: Shield },
 ];
 
 export function AppSidebar() {
