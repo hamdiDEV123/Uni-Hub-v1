@@ -67,6 +67,23 @@ This is not a complete list of every migration, but the key ones for marketplace
 
 ---
 
+### 2.1 Study Hub launch hardening (high level)
+
+- `20260316120000_study_hub_phase1.sql`
+  - Base Study Hub tables (`study_materials`, `study_material_votes`) + vote RPC + initial RLS.
+- `20260316150000_study_hub_moderation_reports.sql`
+  - Adds moderation status (`active`, `under_review`, `removed`) and reports table.
+  - Extends update policy to owner-or-admin.
+- `20260316163000_study_hub_duplicate_link_guard.sql`
+  - Adds normalized URL scope guard via trigger to block duplicate links in same academic scope.
+- `20260316173000_study_hub_favorites.sql` and `20260316190000_study_hub_recent_views.sql`
+  - Adds favorites and recent-views tables with owner-scoped RLS policies.
+- `20260316203000_study_hub_security_hardening.sql`
+  - Adds admin-only delete policy on `study_material_reports`.
+  - Adds update-guard trigger that prevents non-admin users from changing moderation/ranking-sensitive fields.
+
+---
+
 ### 3. RPC source-of-truth mapping
 
 This section maps important RPCs to the migration file that currently defines their **authoritative** implementation.

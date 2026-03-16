@@ -5,6 +5,7 @@ import {
   Home,
   Trophy,
   Bell,
+  BookOpen,
   LayoutDashboard,
   Palette,
   Shield,
@@ -33,12 +34,13 @@ const mainNav = [
   { title: "\u0627\u0644\u062a\u0648\u0635\u064a\u0644", url: "/delivery", icon: Truck },
   { title: "\u0627\u0644\u0633\u0643\u0646", url: "/housing", icon: Home },
   { title: "\u0627\u0644\u0631\u064a\u0627\u0636\u0629", url: "/sports", icon: Trophy },
+  { title: "\u0628\u0646\u0643 \u0627\u0644\u0645\u062d\u0627\u0636\u0631\u0627\u062a", url: "/study-hub", icon: BookOpen },
   { title: "\u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062a", url: "/notifications", icon: Bell },
-  { title: "\u0646\u0638\u0627\u0645 \u0627\u0644\u062a\u0635\u0645\u064a\u0645", url: "/design-system", icon: Palette },
 ];
 
 const adminNav = [
-  { title: "\u0644\u0648\u062d\u0629 \u0623\u062f\u0645\u0646 \u0627\u0644\u0633\u0648\u0642", url: "/admin", icon: Shield },
+  { title: "لوحة الأدمن الرئيسية", url: "/admin", icon: Shield },
+  { title: "\u0646\u0638\u0627\u0645 \u0627\u0644\u062a\u0635\u0645\u064a\u0645", url: "/design-system", icon: Palette },
 ];
 
 export function AppSidebar() {
@@ -69,7 +71,7 @@ export function AppSidebar() {
         <img src="/UniHup-StudentLogo-markOnly-creativePurple.svg" alt="UniHub Logo" className="h-12 w-auto mx-auto" />
         <p className="mt-2 text-center font-mono text-xs tracking-tighter text-muted-foreground">
           {isAdmin
-            ? "لوحة إدارة المنصة"
+            ? "لوحة الأدمن الرئيسية"
             : "منصة الطالب الجامعي"}
         </p>
       </div>

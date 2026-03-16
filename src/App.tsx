@@ -17,6 +17,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Delivery = lazy(() => import("./pages/Delivery"));
 const Housing = lazy(() => import("./pages/Housing"));
 const Sports = lazy(() => import("./pages/Sports"));
+const StudyHub = lazy(() => import("./pages/Study Hub"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -26,7 +27,9 @@ const Marketplace = lazy(() => import("./pages/marketplace/MarketplaceV2"));
 const MarketplaceCheckout = lazy(() => import("./pages/marketplace/MarketplaceCheckoutV2"));
 const MarketplaceProduct = lazy(() => import("./pages/marketplace/ProductLanding"));
 const MarketplaceOrders = lazy(() => import("./pages/marketplace/MarketplaceOrdersV2"));
+const AdminHome = lazy(() => import("./pages/admin/AdminHome"));
 const AdminMarketplaceConsole = lazy(() => import("./pages/admin/AdminMarketplaceConsoleV2"));
+const AdminStudyHubConsole = lazy(() => import("./pages/admin/AdminStudyHubConsole"));
 const AdminLegacy = lazy(() => import("./pages/Admin"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 
@@ -141,16 +144,17 @@ const App = () => (
               <Route path="/delivery" element={<ProtectedRoute><Delivery /></ProtectedRoute>} />
               <Route path="/housing" element={<ProtectedRoute><Housing /></ProtectedRoute>} />
               <Route path="/sports" element={<ProtectedRoute><Sports /></ProtectedRoute>} />
+              <Route path="/study-hub" element={<ProtectedRoute><StudyHub /></ProtectedRoute>} />
               <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
               <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/design-system" element={<ProtectedRoute><DesignSystem /></ProtectedRoute>} />
+              <Route path="/design-system" element={<AdminRoute><DesignSystem /></AdminRoute>} />
               <Route
                 path="/admin"
                 element={
                   <AdminRoute>
-                    <RouteErrorBoundary routeName="لوحة إدارة السوق">
-                      {flags.adminMarketplaceV2Enabled ? <AdminMarketplaceConsole /> : <AdminLegacy />}
+                    <RouteErrorBoundary routeName="لوحة الأدمن الرئيسية">
+                      <AdminHome />
                     </RouteErrorBoundary>
                   </AdminRoute>
                 }
@@ -161,6 +165,16 @@ const App = () => (
                   <AdminRoute>
                     <RouteErrorBoundary routeName="لوحة إدارة السوق">
                       {flags.adminMarketplaceV2Enabled ? <AdminMarketplaceConsole /> : <AdminLegacy />}
+                    </RouteErrorBoundary>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/study-hub"
+                element={
+                  <AdminRoute>
+                    <RouteErrorBoundary routeName="لوحة إدارة بنك المحاضرات">
+                      <AdminStudyHubConsole />
                     </RouteErrorBoundary>
                   </AdminRoute>
                 }

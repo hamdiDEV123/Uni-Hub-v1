@@ -704,6 +704,230 @@ export type Database = {
           },
         ]
       }
+      study_materials: {
+        Row: {
+          course_name: string
+          created_at: string
+          description: string | null
+          downvotes: number
+          faculty: string
+          id: string
+          material_type: string
+          owner_id: string
+          resource_url: string
+          resource_url_backup: string | null
+          resource_url_normalized: string
+          status: string
+          study_year: string
+          term: string
+          title: string
+          updated_at: string
+          upvotes: number
+          university: string
+        }
+        Insert: {
+          course_name: string
+          created_at?: string
+          description?: string | null
+          downvotes?: number
+          faculty: string
+          id?: string
+          material_type: string
+          owner_id: string
+          resource_url: string
+          resource_url_backup?: string | null
+          resource_url_normalized?: string
+          status?: string
+          study_year: string
+          term: string
+          title: string
+          updated_at?: string
+          upvotes?: number
+          university?: string
+        }
+        Update: {
+          course_name?: string
+          created_at?: string
+          description?: string | null
+          downvotes?: number
+          faculty?: string
+          id?: string
+          material_type?: string
+          owner_id?: string
+          resource_url?: string
+          resource_url_backup?: string | null
+          resource_url_normalized?: string
+          status?: string
+          study_year?: string
+          term?: string
+          title?: string
+          updated_at?: string
+          upvotes?: number
+          university?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_materials_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_reports: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          reason: string | null
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          reason?: string | null
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          reason?: string | null
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_reports_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_material_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_favorites_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_material_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_views: {
+        Row: {
+          id: string
+          material_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          material_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          material_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_views_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_material_views_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_votes: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          updated_at: string
+          user_id: string
+          vote: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          updated_at?: string
+          user_id: string
+          vote: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          updated_at?: string
+          user_id?: string
+          vote?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_votes_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_material_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1030,6 +1254,18 @@ export type Database = {
           _transfer_reference?: string | null
         }
         Returns: string
+      }
+      vote_study_material: {
+        Args: {
+          _material_id: string
+          _vote: number
+        }
+        Returns: {
+          downvotes: number
+          score: number
+          upvotes: number
+          user_vote: number
+        }[]
       }
       transition_market_order_status: {
         Args: {
