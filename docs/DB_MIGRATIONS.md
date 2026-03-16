@@ -32,7 +32,7 @@ This is not a complete list of every migration, but the key ones for marketplace
   - Introduces helpers: `public.is_admin`, `public.current_uid`.
   - Tightens RLS for `profiles`, `wallet_ledger`, `products`, `orders`.
   - Adds secure delivery RPCs like `create_delivery_order_secure`.
-
+  - If this folder exists, treat it as **development artifacts only** (not a deployment source).
 - `20260305231000_marketplace_secure_cart_listing_rpc_v1.sql`
   - Enables and hardens RLS on `public.market_cart_items`.
   - Adds unique index on `(user_id, product_id)`.
