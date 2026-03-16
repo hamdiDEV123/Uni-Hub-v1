@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/lib/auth';
+import { useNavigate } from 'react-router-dom';
 import { 
-  Package, Loader2, MapPin, CheckCircle2, Plus, 
-  Search, ShoppingBag, MessageSquare, XCircle, ShieldCheck, Lock, Phone
+  Package, MapPin, CheckCircle2, Plus, 
+  Search, ShoppingBag, MessageSquare, ShieldCheck, Lock, Star, Award, TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -12,25 +14,36 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  claimDeliveryOrderSecure,
+  completeDeliveryOrderSecure,
+  createDeliveryOrderSecure,
+  releaseDeliveryOrderSecure,
+} from "@/backend/deliveryApi";
+
+type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+type OrderRow = Database['public']['Tables']['orders']['Row'];
 
 export default function DeliveryHub() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'requester' | 'runner'>('runner');
   const [enteredOtp, setEnteredOtp] = useState<string>(""); 
+  const [rating, setRating] = useState(0); // تقييم الطلب
 
-  const universities = ["دمياط الجديدة", "دمياط الأهلية", "الدلتا", "المنصورة", "المنصورة الأهلية", "المنصورة الجديدة", "حورس"];
-  const [selectedUni, setSelectedUni] = useState("الدلتا");
+  const universities = ["جامعة الدلتا", "جامعة المنصورة", "القاهرة", "الاسكندرية", "جامعة عين شمس", "جامعة الأزهر", "أخرى"];
+  const [selectedUni, setSelectedUni] = useState("القاهرة");
   const [newOrder, setNewOrder] = useState({ title: '', pickup: '', dropoff: '', fee: '', type: 'external', phone: '' });
 
-  // 1. جلب بيانات البروفايل للتأكد من التوثيق (الركن الأول: التوثيق)
+  // 1. جلب بيانات المستخدم الحالية من الواجهة الخلفية (ملف شخصي، رصيد)
   const { data: profile } = useQuery({
     queryKey: ['user-profile', user?.id],
     queryFn: async () => {
-      const { data, error } = await (supabase.from('profiles') as any).select('*').eq('id', user?.id).single();
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user?.id ?? '').single();
       if (error) throw error;
-      return data;
+      return data as ProfileRow;
     },
     enabled: !!user,
   });
@@ -39,168 +52,176 @@ export default function DeliveryHub() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ['delivery-orders', selectedUni],
     queryFn: async () => {
-      const { data, error } = await (supabase.from('orders') as any).select('*').eq('description', selectedUni).order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('orders').select('*').eq('description', selectedUni).order('created_at', { ascending: false });
       if (error) throw error;
-      return data as any[];
+      return (data ?? []) as OrderRow[];
     },
     refetchInterval: 3000,
   });
 
-  // 3. نشر طلب (الركن الثالث: حجز الفلوس Escrow)
+  // 3. إنشاء طلب (نظام الدفع: حجز المبلغ Escrow)
   const createOrder = useMutation({
     mutationFn: async () => {
-      if (!newOrder.title || !newOrder.pickup || !newOrder.dropoff || !newOrder.fee) throw new Error("أكمل البيانات");
-      const { error } = await (supabase.from('orders') as any).insert({
-        buyer_id: user?.id,
+      if (!user?.id) throw new Error("لم يتم العثور على المستخدم");
+      if (!newOrder.title || !newOrder.pickup || !newOrder.dropoff || !newOrder.fee || !newOrder.phone) throw new Error("املأ الفراغات");
+      
+      const feeAmount = parseFloat(newOrder.fee);
+      if (isNaN(feeAmount) || feeAmount <= 0) throw new Error("مبلغ العمولة يجب أن يكون رقمًا موجبًا");
+      await createDeliveryOrderSecure({
         title: newOrder.title,
-        description: selectedUni,
-        location: `[${newOrder.type === 'external' ? 'خارجي' : 'داخلي'}] ${newOrder.pickup} ➔ ${newOrder.dropoff}`,
-        fee: parseFloat(newOrder.fee),
-        status: 'pending',
-        otp_code: Math.floor(1000 + Math.random() * 9000).toString(),
-        phone_number: newOrder.phone 
+        campus: selectedUni,
+        pickup: newOrder.pickup,
+        dropoff: newOrder.dropoff,
+        fee: feeAmount,
+        phone: newOrder.phone,
+        type: newOrder.type,
       });
-      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['delivery-orders'] as any });
-      toast.success('تم حجز العمولة ونشر الطلب بأمان! 🔐');
+      queryClient.invalidateQueries({ queryKey: ['delivery-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      toast.success('تم إنشاء الطلب بنجاح! سيتم إعلامك قريبًا');
       setIsDialogOpen(false);
       setNewOrder({ title: '', pickup: '', dropoff: '', fee: '', type: 'external', phone: '' });
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء الطلب");
     }
   });
 
-  // 4. تحديث الحالة مع التحقق من الـ OTP وتحويل العمولة
+  // 4. تحديث حالة الطلب من قبل الموصل باستخدام OTP لضمان الأمان
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, isClaiming, otp }: { id: string, status: string, isClaiming: boolean, otp?: string }) => {
       const targetOrder = orders?.find(o => o.id === id);
+      if (!targetOrder) throw new Error("الطلب غير موجود");
 
-      // الركن الثاني: التحقق من الكود الرقمي وتحويل الرصيد
-      if (status === 'completed') {
-        if (!otp || otp.trim() !== targetOrder.otp_code.toString().trim()) {
-          throw new Error("كود الاستلام غير صحيح! اطلبه من زميلك يد بيد");
-        }
-
-        // تحويل العمولة لمحفظة الموصل (Runner Wallet)
-        const { data: runnerProfile } = await (supabase.from('profiles') as any).select('wallet').eq('id', user?.id).single();
-        const newBalance = (runnerProfile?.wallet || 0) + targetOrder.fee;
-        
-        const { error: walletError } = await (supabase.from('profiles') as any)
-          .update({ wallet: newBalance })
-          .eq('id', user?.id);
-        
-        if (walletError) throw walletError;
+      if (status === 'active' && isClaiming) {
+        await claimDeliveryOrderSecure(id);
+        return;
       }
 
-      const payload: any = { status };
-      if (isClaiming) payload.runner_id = user?.id;
-      if (status === 'pending') payload.runner_id = null;
+      if (status === 'delivered') {
+        if (!otp || otp.trim() !== targetOrder.otp_code.toString().trim()) {
+          throw new Error("رمز OTP غير صحيح! تأكد من الرمز من العميل");
+        }
+        await completeDeliveryOrderSecure(id, otp.trim());
+        return;
+      }
 
-      const { error } = await (supabase.from('orders') as any).update(payload).eq('id', id);
-      if (error) throw error;
+      if (status === 'pending' && !isClaiming) {
+        await releaseDeliveryOrderSecure(id);
+        return;
+      }
+
+      throw new Error("العملية غير صالحة");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['delivery-orders'] as any });
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] as any });
-      toast.success('تمت العملية بنجاح! الرصيد الآن في محفظتك 💰');
+      queryClient.invalidateQueries({ queryKey: ['delivery-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      toast.success('تم تحديث الحالة! شكرًا لتعاونك معنا');
       setEnteredOtp("");
+      setRating(0);
     },
-    onError: (err: any) => toast.error(err.message)
+    onError: (err: unknown) => toast.error(err instanceof Error ? err.message : 'حدث خطأ أثناء تحديث الحالة')
   });
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#0a0a0c] font-black text-orange-500 italic animate-pulse tracking-tighter text-2xl">RARE SECURITY LOADING...</div>;
+  if (isLoading) return <div className="flex h-screen items-center justify-center bg-background font-black text-primary animate-pulse tracking-tighter text-2xl">{"جاري تحميل خدمة التوصيل..."}</div>;
+
+  // إحصائيات التوصيل
+  const completedMissions = orders?.filter(o => o.runner_id === user?.id && o.status === 'delivered').length || 0;
+  const totalEarnings = orders?.filter(o => o.runner_id === user?.id && o.status === 'delivered').reduce((acc, curr) => acc + curr.fee, 0) || 0;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] p-4 pb-24 text-right text-white font-sans" dir="rtl">
+    <div className="min-h-screen bg-background p-4 pb-24 text-right text-foreground font-sans" dir="rtl">
       
-      {/* هيدر الأمان اللوجستي */}
-      <div className="mb-6 flex justify-between items-center border-b border-white/5 pb-4">
+      {/* رأس الصفحة العلوي */}
+      <div className="mb-6 flex justify-between items-center border-b border-border pb-4">
         <div className="flex items-center gap-2">
-           {profile?.verified_status ? <ShieldCheck size={20} className="text-green-500"/> : <Lock size={20} className="text-orange-500"/>}
-           <span className={`text-[10px] font-black uppercase italic ${profile?.verified_status ? 'text-green-500' : 'text-orange-500'}`}>
-             {profile?.verified_status ? "Runner الموثوق" : "التوثيق مطلوب للتوصيل"}
+           {profile?.verified_status ? <ShieldCheck size={20} className="text-success"/> : <Lock size={20} className="text-warning"/>}
+           <span className={`text-[10px] font-black uppercase ${profile?.verified_status ? 'text-success' : 'text-warning'}`}>
+             {profile?.verified_status ? "حساب موثق" : "التوثيق مطلوب للتوصيل"}
            </span>
         </div>
         <div>
-          <h1 className="text-2xl font-black text-orange-500 italic tracking-tighter">DELIVERY HUB</h1>
-          <p className="text-[8px] text-gray-600 font-bold text-left">SECURE P2P LOGISTICS</p>
+          <h1 className="text-2xl font-black text-primary tracking-tighter">{"مركز التوصيل"}</h1>
+          <p className="text-[8px] text-muted-foreground font-bold text-left">{"توصيل طلابي آمن"}</p>
         </div>
       </div>
 
-      {/* اختيار الجامعة */}
+      {/* فلتر الجامعات */}
       <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar flex-row-reverse mb-4">
         {universities.map((uni) => (
           <button key={uni} onClick={() => setSelectedUni(uni)}
             className={`whitespace-nowrap px-5 py-2 rounded-xl font-black text-[10px] border transition-all duration-300 ${
-              selectedUni === uni ? 'bg-orange-600 border-orange-500 shadow-lg shadow-orange-600/20' : 'bg-white/5 border-white/5 text-gray-500'
+              selectedUni === uni ? 'bg-primary text-primary-foreground border-primary shadow-hard-sm' : 'bg-card border-border text-muted-foreground'
             }`}>
             {uni}
           </button>
         ))}
       </div>
 
-      {/* نظام التبديل */}
-      <div className="bg-white/5 p-1 rounded-2xl flex flex-row-reverse mb-8 border border-white/5 shadow-inner">
-        <button onClick={() => setViewMode('runner')} className={`flex-1 py-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all ${viewMode === 'runner' ? 'bg-orange-600 text-white' : 'text-gray-500'}`}><Search size={16} /> استكشف الطلبات</button>
-        <button onClick={() => setViewMode('requester')} className={`flex-1 py-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all ${viewMode === 'requester' ? 'bg-orange-600 text-white' : 'text-gray-500'}`}><ShoppingBag size={16} /> طلباتي الخاصة</button>
+      {/* فلتر العرض */}
+      <div className="bg-muted/30 p-1 rounded-2xl flex flex-row-reverse mb-8 border border-border shadow-hard-sm">
+        <button onClick={() => setViewMode('runner')} className={`flex-1 py-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all ${viewMode === 'runner' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}><Search size={16} /> تصفح الطلبات</button>
+        <button onClick={() => setViewMode('requester')} className={`flex-1 py-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all ${viewMode === 'requester' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}><ShoppingBag size={16} /> إدارة طلباتي</button>
       </div>
 
-      {/* واجهة المشتري (نشر الطلبات) */}
+      {/* قسم طلباتي (عندما أكون طالبًا) */}
       {viewMode === 'requester' && (
         <div className="space-y-6">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full h-16 rounded-[2rem] border-2 border-dashed border-orange-500/20 bg-orange-500/5 text-orange-500 font-black gap-3 shadow-lg hover:bg-orange-500/10">نشر طلب توصيل جديد <Plus size={20} /></Button>
+              <Button className="w-full h-16 rounded-[2rem] border-2 border-dashed border-primary/25 bg-primary/5 text-primary font-black gap-3 shadow-hard-sm hover:bg-primary/10 interactive-lift">إنشاء طلب توصيل جديد <Plus size={20} /></Button>
             </DialogTrigger>
-            <DialogContent className="bg-[#121214] border-white/10 text-white text-right font-sans" dir="rtl">
-              <DialogHeader><DialogTitle className="text-orange-500 font-black italic text-xl">تفاصيل المهمة اللوجستية</DialogTitle></DialogHeader>
+            <DialogContent className="bg-card border-border text-foreground text-right font-sans shadow-hard" dir="rtl">
+              <DialogHeader><DialogTitle className="text-primary font-black text-xl">تفاصيل طلب التوصيل</DialogTitle></DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-1">
-                   <label className="text-[10px] text-gray-500 mr-2 font-bold">ماذا تريد أن تشحن؟</label>
-                   <Input placeholder="مثال: لاب توب، طرد من أمازون، مذكرات..." value={newOrder.title} onChange={(e) => setNewOrder({...newOrder, title: e.target.value})} className="bg-white/5 border-white/10 h-12 rounded-xl" />
+                 <label className="text-[10px] text-muted-foreground mr-2 font-bold">ماذا تريد توصيله؟</label>
+                 <Input placeholder="مثال: أريد توصيل وجبة من مطعم..." value={newOrder.title} onChange={(e) => setNewOrder({...newOrder, title: e.target.value})} className="bg-muted/30 border-border h-12 rounded-xl" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 mr-2 font-bold">نقطة الاستلام</label>
-                      <Input placeholder="منين؟" value={newOrder.pickup} onChange={(e) => setNewOrder({...newOrder, pickup: e.target.value})} className="bg-white/5 border-white/10 h-12 rounded-xl" />
+                   <label className="text-[10px] text-muted-foreground mr-2 font-bold">مكان الاستلام</label>
+                   <Input placeholder="البوابة" value={newOrder.pickup} onChange={(e) => setNewOrder({...newOrder, pickup: e.target.value})} className="bg-muted/30 border-border h-12 rounded-xl" />
                    </div>
                    <div className="space-y-1">
-                      <label className="text-[10px] text-gray-500 mr-2 font-bold">نقطة التوصيل</label>
-                      <Input placeholder="فين؟" value={newOrder.dropoff} onChange={(e) => setNewOrder({...newOrder, dropoff: e.target.value})} className="bg-white/5 border-white/10 h-12 rounded-xl" />
+                   <label className="text-[10px] text-muted-foreground mr-2 font-bold">مكان التسليم</label>
+                   <Input placeholder="السكن" value={newOrder.dropoff} onChange={(e) => setNewOrder({...newOrder, dropoff: e.target.value})} className="bg-muted/30 border-border h-12 rounded-xl" />
                    </div>
                 </div>
                 <div className="space-y-1">
-                   <label className="text-[10px] text-gray-500 mr-2 font-bold">رقم الهاتف للتنسيق</label>
-                   <Input placeholder="رقم واتسابك" value={newOrder.phone} onChange={(e) => setNewOrder({...newOrder, phone: e.target.value})} className="bg-white/5 border-white/10 h-12 rounded-xl" />
+                 <label className="text-[10px] text-muted-foreground mr-2 font-bold">رقم هاتف للتواصل</label>
+                 <Input placeholder="رقم الهاتف" value={newOrder.phone} onChange={(e) => setNewOrder({...newOrder, phone: e.target.value})} className="bg-muted/30 border-border h-12 rounded-xl" />
                 </div>
                 <div className="space-y-1">
-                   <label className="text-[10px] text-orange-500 mr-2 font-black italic uppercase italic">قيمة العمولة (ج.م)</label>
-                   <Input type="number" placeholder="كم ستدفع لزميلك؟" value={newOrder.fee} onChange={(e) => setNewOrder({...newOrder, fee: e.target.value})} className="bg-orange-500/5 border-orange-500/20 h-14 rounded-xl text-center text-lg font-black" />
+                 <label className="text-[10px] text-primary mr-2 font-black uppercase">عمولة التوصيل (ج.م)</label>
+                 <Input type="number" placeholder="كم ستدفع للموصل؟" value={newOrder.fee} onChange={(e) => setNewOrder({...newOrder, fee: e.target.value})} className="bg-primary/5 border-primary/20 h-14 rounded-xl text-center text-lg font-black" />
                 </div>
-                <Button onClick={() => createOrder.mutate()} className="w-full bg-orange-600 font-black h-14 rounded-2xl shadow-xl shadow-orange-600/20 mt-4">تأكيد وحجز العمولة</Button>
-                <p className="text-[9px] text-center text-gray-500 italic">بضغطك هنا، يتم حجز مبلغ العمولة من محفظتك لضمان حق الـ Runner</p>
+               <Button onClick={() => createOrder.mutate()} className="w-full font-black h-14 rounded-2xl shadow-hard-sm mt-4 interactive-lift">تأكيد ونشر الطلب</Button>
+               <p className="text-[9px] text-center text-muted-foreground">{"بالضغط هنا يتم حجز مبلغ العمولة من محفظتك لضمان حق الموصل"}</p>
               </div>
             </DialogContent>
           </Dialog>
 
           {orders?.filter(o => o.buyer_id === user?.id).map(order => (
-            <Card key={order.id} className="p-6 rounded-[2.5rem] bg-[#121214] border border-white/10 relative overflow-hidden">
+            <Card key={order.id} className="p-6 rounded-[2.5rem] bg-card border border-border relative overflow-hidden shadow-hard interactive-lift">
               <div className="flex justify-between items-center mb-4">
-                <Badge className={`${order.status === 'active' ? 'bg-blue-500 text-white' : 'bg-orange-500/10 text-orange-500'} uppercase text-[9px] font-black px-4`}>
-                  {order.status === 'pending' ? 'في انتظار Runner ⏳' : order.status === 'active' ? 'جاري التوصيل 🚚' : 'تم بنجاح ✅'}
+                <Badge className={`${order.status === 'active' ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary border border-primary/30'} uppercase text-[9px] font-black px-4`}>
+                  {order.status === 'pending' ? "في انتظار موصل ⏳" : order.status === 'active' ? "جاري التوصيل 🚚" : "تم بنجاح ✅"}
                 </Badge>
                 <div className="text-right">
-                  <span className="text-xs text-gray-500 block font-bold mb-1 italic">قيمة العمولة</span>
-                  <span className="font-black text-orange-500 text-xl">{order.fee} ج.م</span>
+                  <span className="text-xs text-muted-foreground block font-bold mb-1">عمولة التوصيل</span>
+                  <span className="font-black text-primary text-xl">{order.fee} ج.م</span>
                 </div>
               </div>
               <p className="font-black text-right mb-6 text-lg">{order.title}</p>
               
               {order.status === 'active' && (
-                <div className="bg-blue-600/10 border border-blue-500/30 p-5 rounded-3xl text-center space-y-2">
-                  <p className="text-[10px] text-blue-500 font-black italic uppercase">SECURITY CODE - كود الأمان</p>
-                  <p className="text-4xl font-black text-blue-500 tracking-[0.5em]">{order.otp_code}</p>
-                  <p className="text-[9px] text-gray-500 font-bold italic">لا تملي هذا الكود لزميلك إلا بعد استلام طردك</p>
+                <div className="bg-primary/10 border border-primary/30 p-5 rounded-3xl text-center space-y-2">
+                  <p className="text-[10px] text-primary font-black uppercase">{"كود الأمان"}</p>
+                  <p className="text-4xl font-black text-primary tracking-[0.5em]">{order.otp_code}</p>
+                  <p className="text-[9px] text-muted-foreground font-bold">شارك هذا الكود مع الموصل عند استلام طلبك فقط</p>
                 </div>
               )}
             </Card>
@@ -208,27 +229,51 @@ export default function DeliveryHub() {
         </div>
       )}
 
-      {/* واجهة الموصل (استكشاف المهام) */}
+      {/* قسم التوصيل (عندما أكون موصلًا) */}
       {viewMode === 'runner' && (
         <div className="space-y-6">
+          {/* إحصائيات الموصل - Gamification */}
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="p-4 bg-card/20 border border-border/20 flex items-center gap-3 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary z-10">
+                <Award size={20} />
+              </div>
+              <div className="z-10">
+                <p className="text-[9px] text-muted-foreground font-bold">المهام المكتملة</p>
+                <p className="text-xl font-black text-foreground">{completedMissions}</p>
+              </div>
+            </Card>
+            <Card className="p-4 bg-card border border-border flex items-center gap-3 relative overflow-hidden group shadow-hard-sm">
+              <div className="absolute inset-0 bg-success/5 group-hover:bg-success/10 transition-colors"></div>
+              <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center text-success z-10">
+                <TrendingUp size={20} />
+              </div>
+              <div className="z-10">
+                <p className="text-[9px] text-muted-foreground font-bold">إجمالي الأرباح</p>
+                <p className="text-xl font-black text-foreground">{totalEarnings} <span className="text-[10px] text-muted-foreground">ج.م</span></p>
+              </div>
+            </Card>
+          </div>
+
           {orders?.filter(o => (o.status === 'pending' || (o.status === 'active' && o.runner_id === user?.id))).map(order => (
-            <Card key={order.id} className={`p-8 rounded-[3rem] bg-[#121214] border transition-all duration-500 ${order.status === 'active' ? 'border-green-500/40 shadow-2xl scale-[1.02]' : 'border-white/5'}`}>
+            <Card key={order.id} className={`p-8 rounded-[3rem] bg-card border transition-all duration-500 shadow-hard ${order.status === 'active' ? 'border-primary/40 scale-[1.02]' : 'border-border'}`}>
               <div className="flex justify-between items-start mb-6">
-                 <Badge className={order.location.includes('[خارجي]') ? 'bg-blue-500/10 text-blue-500 font-black' : 'bg-green-500/10 text-green-500 font-black'}>
-                   {order.location.includes('[خارجي]') ? 'مشوار خارجي 🚗' : 'توصيل داخلي 🏫'}
+                <Badge className={order.location.includes('[خارجي]') ? 'bg-primary/10 text-primary border border-primary/30 font-black' : 'bg-primary/10 text-primary border border-primary/30 font-black'}>
+                   {order.location.includes('[خارجي]') ? 'خارج الحرم الجامعي' : 'داخل الحرم الجامعي'}
                  </Badge>
                  <div className="text-right">
-                    <span className="text-[10px] text-gray-500 font-black block italic">الربح المتوقع</span>
-                    <div className="text-orange-500 font-black text-3xl italic tracking-tighter">{order.fee} <span className="text-xs">ج.م</span></div>
+                  <span className="text-[10px] text-muted-foreground font-black block">عمولة التوصيل</span>
+                  <div className="text-primary font-black text-3xl tracking-tighter">{order.fee} <span className="text-xs">ج.م</span></div>
                  </div>
               </div>
 
-              <div className="bg-white/[0.02] p-6 rounded-[2.5rem] border border-white/5 mb-6 text-right font-bold text-[11px] relative">
-                 <p className="font-black text-xl mb-4 flex items-center gap-2 flex-row-reverse"><Package className="text-orange-500" size={24}/> {order.title}</p>
+              <div className="bg-muted/20 p-6 rounded-[2.5rem] border border-border mb-6 text-right font-bold text-[11px] relative">
+                <p className="font-black text-xl mb-4 flex items-center gap-2 flex-row-reverse"><Package className="text-primary" size={24}/> {order.title}</p>
                  <div className="space-y-2 mr-2">
-                    <div className="flex items-center gap-2 flex-row-reverse text-gray-400 font-black tracking-tight"><MapPin size={12}/> {order.location.split('➔')[0].replace(/\[.*?\]/, '')}</div>
-                    <div className="h-4 w-0.5 bg-orange-500/20 mr-1.5"></div>
-                    <div className="flex items-center gap-2 flex-row-reverse text-green-500 font-black tracking-tight"><CheckCircle2 size={12}/> {order.location.split('➔')[1]}</div>
+                  <div className="flex items-center gap-2 flex-row-reverse text-muted-foreground font-black tracking-tight"><MapPin size={12}/> {order.location.split(' -> ')[0].replace(/\[.*?\]/, '')}</div>
+                  <div className="h-4 w-0.5 bg-primary/20 mr-1.5"></div>
+                  <div className="flex items-center gap-2 flex-row-reverse text-primary font-black tracking-tight"><CheckCircle2 size={12}/> {order.location.split(' -> ')[1]}</div>
                  </div>
               </div>
 
@@ -237,37 +282,50 @@ export default function DeliveryHub() {
                   <Button 
                     onClick={() => {
                       if (!profile?.verified_status) {
-                        toast.error("عفواً! يجب توثيق الكارنيه أولاً في صفحة البروفايل لتتمكن من القبول.");
+                        toast.error("مهم! يجب عليك توثيق حسابك أولاً قبل قبول أي طلبات توصيل.");
                         return;
                       }
                       updateStatus.mutate({ id: order.id, status: 'active', isClaiming: true });
                     }} 
-                    className={`w-full h-16 rounded-2xl font-black shadow-xl transition-all ${!profile?.verified_status ? 'bg-gray-800 text-gray-500' : 'bg-orange-600 hover:bg-orange-700 shadow-orange-600/20'}`}
+                    className={`w-full h-16 rounded-2xl font-black shadow-hard-sm transition-all ${!profile?.verified_status ? 'bg-muted text-muted-foreground' : 'interactive-lift'}`}
                   >
-                    {!profile?.verified_status ? "🔒 قفل الأمان: التوثيق مطلوب" : "قبول المهمة (Runner)"}
+                    {!profile?.verified_status ? "🔒 التوثيق مطلوب قبل القبول" : "قبول المهمة (موصل)"}
                   </Button>
                 )}
 
                 {order.status === 'active' && order.runner_id === user?.id && (
                   <div className="space-y-4">
-                    <Button onClick={() => window.open(`https://wa.me/2${order.phone_number}`, '_blank')} className="w-full bg-green-600 h-14 rounded-2xl font-black flex items-center justify-center gap-3 shadow-lg shadow-green-600/10">
-                      <MessageSquare size={18} /> تواصل مع زميلك (واتساب)
-                    </Button>
+                    <div className="flex gap-3">
+                      <Button onClick={() => window.open(`https://wa.me/2${order.phone_number}`, '_blank')} className="flex-1 h-14 rounded-2xl font-black flex items-center justify-center gap-2 shadow-hard-sm interactive-lift">
+                        <MessageSquare size={18} /> واتساب
+                      </Button>
+                      <Button onClick={() => navigate(`/chat?uid=${order.buyer_id}`)} className="flex-1 h-14 rounded-2xl font-black flex items-center justify-center gap-2 shadow-hard-sm interactive-lift">
+                        <MessageSquare size={18} /> شات التطبيق
+                      </Button>
+                    </div>
                     
-                    <div className="p-6 bg-white/5 rounded-[2.5rem] border border-white/10 space-y-4">
+                    <div className="p-6 bg-muted/30 rounded-[2.5rem] border border-border space-y-4">
                       <div className="text-center">
-                         <p className="text-[10px] text-gray-500 font-black mb-2 italic">اطلب كود الأمان من زميلك لإتمام المهمة:</p>
+                         <p className="text-[10px] text-muted-foreground font-black mb-2">عند استلام المبلغ من العميل، أدخل كود الأمان:</p>
                          <Input 
                             placeholder="أدخل الـ 4 أرقام هنا" 
                             value={enteredOtp}
                             onChange={(e) => setEnteredOtp(e.target.value)}
-                            className="bg-white/10 border-white/20 text-center font-black h-14 text-2xl tracking-[0.5em] rounded-xl focus:border-orange-500 transition-all"
+                            className="bg-card border-border text-center font-black h-14 text-2xl tracking-[0.5em] rounded-xl focus-halo transition-all"
                             maxLength={4}
                          />
                       </div>
+                      
+                      {/* تقييم تجربة التوصيل */}
+                      <div className="flex justify-center gap-2 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star key={star} size={24} className={`cursor-pointer transition-all ${star <= rating ? "fill-warning text-warning scale-110" : "text-muted-foreground"}`} onClick={() => setRating(star)} />
+                        ))}
+                      </div>
+
                       <div className="grid grid-cols-2 gap-3">
-                        <Button onClick={() => updateStatus.mutate({ id: order.id, status: 'completed', isClaiming: false, otp: enteredOtp })} className="bg-green-600 h-14 rounded-2xl font-black text-xs shadow-lg shadow-green-600/20">تأكيد واستلام {order.fee} ج.م</Button>
-                        <Button onClick={() => updateStatus.mutate({ id: order.id, status: 'pending', isClaiming: false })} className="bg-red-500/10 h-14 rounded-2xl font-black text-xs text-red-500 border border-red-500/20">إلغاء المهمة</Button>
+                        <Button onClick={() => updateStatus.mutate({ id: order.id, status: 'delivered', isClaiming: false, otp: enteredOtp })} className="h-14 rounded-2xl font-black text-xs shadow-hard-sm interactive-lift">تأكيد الاستلام وإنهاء المهمة {order.fee} ج.م</Button>
+                        <Button onClick={() => updateStatus.mutate({ id: order.id, status: 'pending', isClaiming: false })} className="bg-destructive/10 h-14 rounded-2xl font-black text-xs text-destructive border border-destructive/20 hover:bg-destructive/20">إلغاء المهمة</Button>
                       </div>
                     </div>
                   </div>
@@ -277,8 +335,8 @@ export default function DeliveryHub() {
           ))}
           {orders?.filter(o => o.status === 'pending' || (o.status === 'active' && o.runner_id === user?.id)).length === 0 && (
              <div className="text-center py-20">
-                <Package size={48} className="mx-auto text-gray-800 mb-4 opacity-20" />
-                <p className="text-gray-600 font-black italic">لا يوجد مهام متاحة في {selectedUni} حالياً</p>
+                <Package size={48} className="mx-auto text-muted-foreground mb-4 opacity-30" />
+                <p className="text-muted-foreground font-black">لا توجد طلبات توصيل في {selectedUni} حالياً</p>
              </div>
           )}
         </div>
