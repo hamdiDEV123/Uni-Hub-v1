@@ -1,26 +1,55 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowRight, ShieldCheck, Mail, Lock, User, Zap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export default function Auth() {
+  const { user, loading: authLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  if (!authLoading && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side validation
+    const newErrors: Record<string, string> = {};
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      newErrors.email = "يرجى إدخال بريد إلكتروني صحيح";
+    }
+    if (password.length < 6) {
+      newErrors.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    }
+    if (!isLogin && fullName.trim().length < 3) {
+      newErrors.fullName = "الاسم يجب أن يكون ثلاثي على الأقل";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
     setLoading(true);
+
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success('Welcome back!');
+        toast.success("تم تسجيل الدخول بنجاح");
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -31,88 +60,162 @@ export default function Auth() {
           },
         });
         if (error) throw error;
-        toast.success('Check your email to confirm your account!');
+        toast.success("تم إنشاء الحساب، افحص البريد للتأكيد");
       }
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "حدث خطأ غير متوقع");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="glass-card p-8 w-full max-w-md"
-      >
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
-            <span className="neon-text-blue">Uni</span>
-            <span className="text-foreground">Hub</span>
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1 font-mono">UNIVERSITY SUPER-APP</p>
-        </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_12%_18%,rgba(0,194,255,0.24),transparent_36%),radial-gradient(circle_at_86%_20%,rgba(20,212,172,0.16),transparent_34%),radial-gradient(circle_at_70%_78%,rgba(255,136,0,0.16),transparent_33%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(22,36,60,.24)_1px,transparent_1px),linear-gradient(to_bottom,rgba(22,36,60,.24)_1px,transparent_1px)] bg-[size:120px_120px]" />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="John Doe"
-                className="bg-muted/50 border-border/50"
-                required
-              />
+      <header className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 md:px-8">
+          <Link to="/" className="inline-flex items-center gap-3">
+            <span className="grid h-11 w-11 place-content-center rounded-2xl bg-primary/20 text-primary shadow-soft">
+              <Zap className="h-5 w-5" />
+            </span>
+            <div className="text-right">
+              <p className="text-2xl font-extrabold leading-none">UniHub Connect</p>
+              <p className="text-xs text-muted-foreground">منصة جامعية عربية متكاملة</p>
             </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@university.edu"
-              className="bg-muted/50 border-border/50"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-muted/50 border-border/50"
-              required
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-          >
-            {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Create Account'}
-          </Button>
-        </form>
+          </Link>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-primary hover:underline font-medium"
-          >
-            {isLogin ? 'Sign Up' : 'Sign In'}
-          </button>
-        </p>
-      </motion.div>
+          <Link to="/" className="text-sm font-bold text-muted-foreground transition hover:text-primary">
+            العودة للرئيسية
+          </Link>
+        </div>
+      </header>
+
+      <div className="mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-6xl items-center justify-center px-6 py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="grid w-full overflow-hidden rounded-3xl border border-border/20 bg-card/40 backdrop-blur-xl lg:grid-cols-2"
+        >
+          <div className="space-y-6 border-b border-border/30 p-8 lg:border-b-0 lg:border-l">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-1 text-xs">
+              <ShieldCheck className="h-4 w-4" />
+              منصة جامعية عربية متكاملة
+            </div>
+            <h1 className="text-4xl font-black leading-tight">
+              {isLogin ? "مرحبًا بعودتك" : "أنشئ حسابك الآن"}
+            </h1>
+            <p className="leading-8 text-muted-foreground">
+              {isLogin
+                ? "ادخل إلى لوحة التحكم واستفد من السوق، التوصيل، السكن والرياضة في تجربة واحدة."
+                : "ابدأ رحلتك داخل UniHub Connect وأنشئ حسابًا موحدًا لإدارة كل خدماتك."}
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">الاسم الكامل</Label>
+                  <div className="relative">
+                    <User className="absolute right-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="fullName" 
+                      value={fullName} 
+                      onChange={(e) => {
+                        setFullName(e.target.value);
+                        if (errors.fullName) setErrors({...errors, fullName: ""});
+                      }} 
+                      className={`pr-10 ${errors.fullName ? "border-red-500 focus-visible:ring-red-500" : ""}`} 
+                      disabled={loading}
+                    />
+                  </div>
+                  {errors.fullName && <p className="text-xs text-red-400">{errors.fullName}</p>}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email">البريد الإلكتروني</Label>
+                <div className="relative">
+                  <Mail className="absolute right-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors({...errors, email: ""});
+                    }} 
+                    className={`pr-10 ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`} 
+                    disabled={loading}
+                  />
+                </div>
+                {errors.email && <p className="text-xs text-red-400">{errors.email}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">كلمة المرور</Label>
+                <div className="relative">
+                  <Lock className="absolute right-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    value={password} 
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors({...errors, password: ""});
+                    }} 
+                    className={`pr-10 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`} 
+                    disabled={loading}
+                  />
+                </div>
+                {errors.password && <p className="text-xs text-red-400">{errors.password}</p>}
+              </div>
+
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? "جاري التنفيذ..." : isLogin ? "تسجيل الدخول" : "إنشاء حساب جديد"}
+                <ArrowRight className="mr-2 h-4 w-4" />
+              </Button>
+            </form>
+
+            <p className="text-sm text-muted-foreground">
+              {isLogin ? "ليس لديك حساب؟" : "لديك حساب بالفعل؟"}{" "}
+              <button 
+                onClick={() => { setIsLogin(!isLogin); setErrors({}); }} 
+                className="font-bold text-primary hover:underline" 
+                type="button"
+                disabled={loading}
+              >
+                {isLogin ? "إنشاء حساب" : "تسجيل الدخول"}
+              </button>
+            </p>
+          </div>
+
+          <div className="hidden flex-col justify-between bg-[linear-gradient(180deg,rgba(0,174,255,0.12),rgba(255,98,0,0.12))] p-8 lg:flex">
+            <div>
+              <p className="text-xs tracking-[0.2em] text-muted-foreground">منصة UniHub Connect</p>
+              <h2 className="mt-4 text-3xl font-black leading-tight">
+                كل خدمات الجامعة
+                <br />
+                في منصة واحدة
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-border/30 bg-card/20 p-4">
+                <p className="text-sm text-foreground">سوق جامعي + إدارة طلبات + مراجعات أدمن</p>
+              </div>
+              <div className="rounded-2xl border border-border/30 bg-card/20 p-4">
+                <p className="text-sm text-foreground">واجهة عربية حديثة وتجربة موحدة</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="pb-8 text-center text-xs text-muted-foreground">
+        <Link to="/" className="hover:text-primary">العودة للصفحة الرئيسية</Link>
+      </div>
     </div>
   );
 }

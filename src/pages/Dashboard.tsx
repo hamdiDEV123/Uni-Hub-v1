@@ -1,98 +1,109 @@
-import { motion } from 'framer-motion';
-import { ShoppingBag, Truck, Home, Trophy, TrendingUp, Package, DollarSign, Users } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
+import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
+import { ShoppingBag, Truck, Home, Trophy, TrendingUp, Package, DollarSign } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { fadeUpItem, pageVariants, staggerContainer } from "@/lib/motion";
 
 export default function Dashboard() {
   const { user } = useAuth();
 
-  const { data: profile } = useQuery({
-    queryKey: ['profile', user?.id],
+  type DashboardProfile = {
+    full_name: string | null;
+    wallet?: string | number | null;
+  };
+
+  // consolidated RPC call to reduce N+1 queries
+  const { data: dashboard } = useQuery({
+    queryKey: ["dashboard-summary", user?.id ?? ""],
     queryFn: async () => {
-      const { data } = await supabase.from('profiles').select('*').eq('id', user!.id).maybeSingle();
-      return data;
+      if (!user?.id) {
+        throw new Error("Missing user id");
+      }
+      // this RPC returns { profile, order_count, product_count, notification_count }
+      const { data, error } = await supabase.rpc("get_dashboard_summary", {
+        user_id: user.id,
+      });
+      if (error) throw error;
+      const row = data ? (Array.isArray(data) ? data[0] : data) : null;
+      return row as unknown as {
+        profile: DashboardProfile | null;
+        order_count: number;
+        product_count: number;
+        notification_count: number;
+      };
     },
     enabled: !!user,
   });
 
-  const { data: orderCount } = useQuery({
-    queryKey: ['order-count', user?.id],
-    queryFn: async () => {
-      const { count } = await supabase.from('orders').select('*', { count: 'exact', head: true }).eq('buyer_id', user!.id);
-      return count ?? 0;
-    },
-    enabled: !!user,
-  });
-
-  const { data: productCount } = useQuery({
-    queryKey: ['product-count', user?.id],
-    queryFn: async () => {
-      const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('seller_id', user!.id);
-      return count ?? 0;
-    },
-    enabled: !!user,
-  });
+  const profile = dashboard?.profile;
+  const orderCount = dashboard?.order_count ?? 0;
+  const productCount = dashboard?.product_count ?? 0;
 
   const stats = [
-    { label: 'Wallet Balance', value: `$${profile?.wallet ?? '0.00'}`, icon: DollarSign, glow: 'neon-glow-blue' },
-    { label: 'My Listings', value: productCount ?? 0, icon: Package, glow: 'neon-glow-orange' },
-    { label: 'My Orders', value: orderCount ?? 0, icon: Truck, glow: 'neon-glow-green' },
-    { label: 'Activity', value: 'Active', icon: TrendingUp, glow: 'neon-glow-blue' },
+    { label: "رصيد المحفظة", value: `${profile?.wallet ?? "0.00"} ج.م`, icon: DollarSign },
+    { label: "إعلاناتي", value: productCount ?? 0, icon: Package },
+    { label: "طلباتي", value: orderCount ?? 0, icon: Truck },
+    { label: "حالة الحساب", value: "نشط", icon: TrendingUp },
   ];
 
   const modules = [
-    { title: 'Marketplace', desc: 'Buy & sell university supplies', icon: ShoppingBag, color: 'neon-text-blue', url: '/marketplace' },
-    { title: 'Delivery', desc: 'Student-to-student logistics', icon: Truck, color: 'neon-text-orange', url: '/delivery' },
-    { title: 'Housing', desc: 'Find your perfect roommate', icon: Home, color: 'neon-text-green', url: '/housing' },
-    { title: 'Sports Hub', desc: 'Book pitches & join tournaments', icon: Trophy, color: 'neon-text-blue', url: '/sports' },
+    { title: "السوق", desc: "بيع وشراء المنتجات الجامعية", icon: ShoppingBag, url: "/marketplace" },
+    { title: "التوصيل", desc: "خدمات توصيل طلابية مؤمنة", icon: Truck, url: "/delivery" },
+    { title: "السكن", desc: "ابحث عن سكن ورفيق مناسب", icon: Home, url: "/housing" },
+    { title: "الرياضة", desc: "احجز وشارك في الفعاليات", icon: Trophy, url: "/sports" },
   ];
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
-      <motion.div variants={item}>
-        <h1 className="text-2xl font-bold">
-          Welcome back, <span className="neon-text-blue">{profile?.full_name || 'Student'}</span>
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">Here's your campus overview</p>
+    <motion.div
+      dir="rtl"
+      variants={pageVariants as Variants}
+      initial="hidden"
+      animate="show"
+      className="space-y-8"
+    >
+      <motion.div variants={fadeUpItem as Variants}>
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-hard">
+          <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+            لوحة تحكم الطالب
+          </span>
+          <h1 className="mt-3 text-3xl font-black text-foreground">
+            {"مرحباً، "}
+            <span className="text-primary">{profile?.full_name || "طالب"}</span>
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">{"هذه نظرة سريعة على حسابك"}</p>
+        </div>
       </motion.div>
 
-      {/* Stats */}
-      <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div variants={staggerContainer as Variants} initial="hidden" animate="show" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className={`stat-card ${s.glow}`}>
+          <motion.div key={s.label} variants={fadeUpItem as Variants} whileHover={{ y: -4 }} className="stat-card shadow-hard interactive-lift interactive-glow bg-card border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">{s.label}</p>
-                <p className="text-2xl font-bold mt-1">{s.value}</p>
+                <p className="text-xs tracking-wide text-muted-foreground">{s.label}</p>
+                <p className="mt-1 text-2xl font-black text-foreground">{s.value}</p>
               </div>
-              <s.icon className="h-8 w-8 text-muted-foreground/30" />
+              <s.icon className="h-8 w-8 text-primary/40" />
             </div>
-          </div>
+          </motion.div>
         ))}
       </motion.div>
 
-      {/* Quick access modules */}
-      <motion.div variants={item}>
-        <h2 className="text-lg font-semibold mb-4">Quick Access</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div variants={fadeUpItem as Variants}>
+        <h2 className="mb-4 text-lg font-semibold">{"الوصول السريع"}</h2>
+        <motion.div variants={staggerContainer as Variants} initial="hidden" animate="show" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {modules.map((m) => (
-            <a key={m.title} href={m.url} className="glass-card-hover p-5 block group">
-              <m.icon className={`h-8 w-8 mb-3 ${m.color}`} />
-              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{m.title}</h3>
-              <p className="text-xs text-muted-foreground mt-1">{m.desc}</p>
-            </a>
+            <motion.div key={m.title} variants={fadeUpItem as Variants} whileHover={{ y: -4, scale: 1.01 }}>
+              <Link to={m.url} className="block p-5 rounded-2xl border border-border bg-card shadow-hard interactive-lift interactive-glow">
+                <m.icon className="mb-3 h-8 w-8 text-primary" />
+                <h3 className="font-semibold text-foreground transition-colors hover:text-primary">{m.title}</h3>
+                <p className="mt-1 text-xs text-muted-foreground">{m.desc}</p>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </motion.div>
     </motion.div>
   );
