@@ -145,7 +145,7 @@ export default function ProductLanding() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="gap-2 interactive-lift"
+            className="gap-2 interactive-lift border-navy/30"
             onClick={() =>
               navigate(
                 `/marketplace/checkout?product=${product.id}&subtotal=${Number(product.price)}`
@@ -154,7 +154,7 @@ export default function ProductLanding() {
           >
             {"اشترِ الآن"}
           </Button>
-          <Button className="gap-2 interactive-lift" onClick={() => addToCartMutation.mutate()}>
+          <Button variant="cta" className="gap-2 interactive-lift" onClick={() => addToCartMutation.mutate()}>
             <ShoppingCart className="h-4 w-4" />
             {"أضف للسلة"}
           </Button>
@@ -163,7 +163,7 @@ export default function ProductLanding() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
-          <Card className="overflow-hidden rounded-2xl border-border/80 shadow-hard">
+          <Card className="overflow-hidden rounded-2xl border-navy/20 shadow-hard">
             <CardContent className="p-0">
               <div className="relative aspect-[16/10] w-full bg-muted/30">
                 {activeImage ? (
@@ -213,7 +213,7 @@ export default function ProductLanding() {
           </div>
         </div>
 
-        <Card className="rounded-2xl border-border/80 shadow-hard">
+        <Card className="rounded-2xl border-navy/20 shadow-hard">
           <CardHeader>
             <CardTitle>{"بيانات المنتج"}</CardTitle>
           </CardHeader>

@@ -300,7 +300,7 @@ export default function Marketplace() {
 
   const vendorBanner = vendor ? (
     <div className="container mx-auto px-4 py-2">
-      <div className="rounded-md border border-border bg-secondary p-3 text-sm text-foreground">
+      <div className="rounded-xl border border-navy/20 bg-secondary p-3 text-sm text-foreground shadow-hard-sm">
         أنت تبيع حاليًا كـ <strong>{vendor.shop_name}</strong> ({vendor.type}).
         <Link to={`/marketplace/vendor/${vendor.id}`} className="underline ml-2">
           عرض المتجر
@@ -315,7 +315,7 @@ export default function Marketplace() {
         {ads.map((ad) => (
           <div
             key={ad.id}
-            className="min-w-[180px] rounded border border-border bg-card p-2 text-xs text-center shadow-hard-sm"
+            className="min-w-[180px] rounded-xl border border-navy/20 bg-card p-2 text-xs text-center shadow-hard-sm"
           >
             إعلان من {ad.vendor_id}
           </div>
@@ -329,7 +329,7 @@ export default function Marketplace() {
       {vendorBanner}
       {adsBanner}
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 to-primary/30 border-b border-border">
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 to-primary/30 border-b border-navy/20">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
         <div className="container relative z-10 mx-auto px-4 py-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between lg:items-center">
@@ -357,7 +357,7 @@ export default function Marketplace() {
             <div className="flex w-full flex-col gap-3 md:w-auto md:shrink-0 md:self-start">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="lg" className="bg-primary text-primary-foreground font-bold gap-2 shadow-hard hover:bg-primary/90 pressable">
+              <Button size="lg" variant="cta" className="font-black gap-2 shadow-hard hover:bg-gold/90 pressable">
                 <Plus className="h-5 w-5" />
                 {"أضف منتج للبيع"}
               </Button>
@@ -455,13 +455,13 @@ export default function Marketplace() {
       <div className="container mx-auto px-4 py-8">
         {/* My Listings Summary */}
         {myListings.length > 0 && (
-        <Card className="mb-8 border-border bg-card shadow-hard overflow-hidden">
+        <Card className="mb-8 border-navy/20 bg-card shadow-hard overflow-hidden">
         <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2"><Tag className="w-4 h-4 text-primary"/> {"إعلاناتي النشطة"}</CardTitle>
         </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           {myListings.map((item) => (
-              <div key={item.id} className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4 shadow-hard pressable">
+              <div key={item.id} className="flex flex-col gap-2 rounded-2xl border border-navy/20 bg-card p-4 shadow-hard pressable">
               <div className="space-y-1">
                   <p className="font-medium truncate">{item.title}</p>
                 <p className="text-xs text-muted-foreground">{`${Number(item.price).toFixed(2)} ج.م - ${item.stock_qty}`}</p>
@@ -696,13 +696,13 @@ export default function Marketplace() {
                         className="flex gap-4 bg-card border border-border p-4 rounded-2xl shadow-hard pressable interactive-lift interactive-glow hover:border-primary/40 transition-all group"
                       >
                          <div className="w-32 h-32 rounded-xl overflow-hidden bg-secondary flex-shrink-0 relative">
-                            {image ? <img src={image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Store/></div>}
+                            {image ? <img src={image} alt={`صورة المنتج ${product.title}`} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Store/></div>}
                          </div>
                          <div className="flex-1 flex flex-col justify-between">
                             <div>
                               <div className="flex justify-between items-start">
                                 <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{product.title}</h3>
-                                <Button size="icon" variant="ghost" onClick={() => toggleWishlist(product.id)} className="text-muted-foreground hover:text-destructive">
+                                <Button size="icon" variant="ghost" aria-label={isWishlisted ? `إزالة ${product.title} من المفضلة` : `إضافة ${product.title} إلى المفضلة`} onClick={() => toggleWishlist(product.id)} className="text-muted-foreground hover:text-destructive">
                                   <Heart className={`w-5 h-5 ${isWishlisted ? "fill-destructive text-destructive" : ""}`} />
                                 </Button>
                               </div>

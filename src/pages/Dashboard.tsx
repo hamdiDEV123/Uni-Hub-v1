@@ -65,7 +65,7 @@ export default function Dashboard() {
       className="space-y-8"
     >
       <motion.div variants={fadeUpItem as Variants}>
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-hard">
+        <div className="rounded-3xl border border-navy/20 bg-card p-6 shadow-hard">
           <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
             لوحة تحكم الطالب
           </span>
@@ -92,13 +92,13 @@ export default function Dashboard() {
       </motion.div>
 
       <motion.div variants={fadeUpItem as Variants}>
-        <h2 className="mb-4 text-lg font-semibold">{"الوصول السريع"}</h2>
+        <h2 className="mb-4 text-lg font-black tracking-tight">{"الوصول السريع"}</h2>
         <motion.div variants={staggerContainer as Variants} initial="hidden" animate="show" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {modules.map((m) => (
             <motion.div key={m.title} variants={fadeUpItem as Variants} whileHover={{ y: -4, scale: 1.01 }}>
-              <Link to={m.url} className="block p-5 rounded-2xl border border-border bg-card shadow-hard interactive-lift interactive-glow">
+              <Link to={m.url} className="block p-5 rounded-2xl border border-navy/20 bg-card shadow-hard interactive-lift interactive-glow">
                 <m.icon className="mb-3 h-8 w-8 text-primary" />
-                <h3 className="font-semibold text-foreground transition-colors hover:text-primary">{m.title}</h3>
+                <h3 className="font-black tracking-tight text-foreground transition-colors hover:text-primary">{m.title}</h3>
                 <p className="mt-1 text-xs text-muted-foreground">{m.desc}</p>
               </Link>
             </motion.div>

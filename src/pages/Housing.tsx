@@ -205,28 +205,35 @@ export default function Housing() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 p-4 bg-transparent min-h-screen text-foreground font-sans" dir="rtl">
-      <div className="flex justify-between items-center rounded-3xl border border-border bg-card p-5 shadow-hard font-sans">
+      <div className="flex items-center justify-between rounded-3xl border border-navy/20 bg-card p-5 shadow-hard font-sans">
         <div className="text-right leading-tight">
           <h1 className="text-5xl font-black text-primary tracking-tighter">سكن الطلاب</h1>
           <p className="text-[9px] text-muted-foreground font-bold tracking-[0.3em] uppercase">اعثر على سكنك المثالي</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="font-black px-10 h-14 rounded-2xl shadow-hard interactive-lift">
+            <Button variant="cta" className="h-14 rounded-2xl px-10 font-black">
               <Plus className="ml-2 h-6 w-6" /> أضف سكن
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-border text-foreground max-w-lg rounded-[2.5rem] overflow-y-auto max-h-[90vh] shadow-hard">
+          <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto rounded-[2.5rem] border-navy/20 bg-card text-foreground shadow-hard">
             <DialogHeader>
               <DialogTitle className="text-2xl font-black text-right text-primary">تفاصيل السكن</DialogTitle>
               <DialogDescription className="sr-only">Housing Form</DialogDescription>
             </DialogHeader>
             <div className="space-y-5 mt-6 pb-4">
-              <div className="grid grid-cols-4 gap-2 border border-border p-4 rounded-3xl bg-muted/20">
+              <div className="grid grid-cols-4 gap-2 rounded-3xl border border-navy/20 bg-muted/20 p-4">
                 {imageFiles.map((f, i) => (
                   <div key={i} className="relative h-20 rounded-2xl overflow-hidden group border border-border">
-                    <img src={URL.createObjectURL(f)} className="w-full h-full object-cover" />
-                    <button onClick={() => setImageFiles(imageFiles.filter((_, idx) => idx !== i))} className="absolute inset-0 bg-red-600/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><X size={16} /></button>
+                    <img src={URL.createObjectURL(f)} alt={`صورة مرفوعة ${i + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      aria-label={`حذف الصورة ${i + 1}`}
+                      onClick={() => setImageFiles(imageFiles.filter((_, idx) => idx !== i))}
+                      className="absolute inset-0 flex items-center justify-center bg-red-600/80 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <X size={16} />
+                    </button>
                   </div>
                 ))}
                 <label className="h-20 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-muted/60 transition-all">
@@ -252,7 +259,7 @@ export default function Housing() {
                 <div className="grid grid-cols-2 gap-2 font-sans">
                   {amenitiesList.map((am) => (
                     <div key={am.id} onClick={() => setForm((p) => ({ ...p, amenities: p.amenities.includes(am.id) ? p.amenities.filter((a) => a !== am.id) : [...p.amenities, am.id] }))}
-                      className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer ${form.amenities.includes(am.id) ? 'bg-primary/10 border-primary/40 text-primary' : 'bg-muted/30 border-border text-muted-foreground'}`}>
+                      className={`flex cursor-pointer items-center justify-between rounded-2xl border p-3 transition-all ${form.amenities.includes(am.id) ? 'border-primary/40 bg-primary/10 text-primary' : 'border-navy/20 bg-muted/30 text-muted-foreground'}`}>
                       <am.icon size={18} />
                       <span className="text-xs font-black">{am.label}</span>
                     </div>
@@ -274,9 +281,9 @@ export default function Housing() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pt-6 font-sans">
         {listings?.map((h: HousingRowCompat) => (
-          <motion.div key={h.id} layout onClick={() => { setSelectedHousing(h); setCurrentImgIndex(0); }} className="bg-card border border-border p-4 rounded-[3rem] cursor-pointer group transition-all shadow-hard interactive-lift">
+          <motion.div key={h.id} layout onClick={() => { setSelectedHousing(h); setCurrentImgIndex(0); }} className="group cursor-pointer rounded-[3rem] border border-navy/20 bg-card p-4 shadow-hard transition-all interactive-lift">
             <div className="h-56 rounded-[2.5rem] overflow-hidden mb-5 bg-zinc-900 relative">
-              <img src={getHousingImages(h)[0] || ''} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+              <img src={getHousingImages(h)[0] || ''} alt={`صورة ${h.title}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
               <Badge className={`absolute top-4 right-4 border font-black text-[9px] px-4 py-2 rounded-full ${h.gender_preference === 'male' ? 'bg-primary/20 text-primary border-primary/35' : 'bg-warning/20 text-warning border-warning/35'}`}>
                 {h.gender_preference === 'male' ? 'شباب' : 'بنات'}
               </Badge>
@@ -293,7 +300,7 @@ export default function Housing() {
       </div>
 
       <Dialog open={!!selectedHousing} onOpenChange={() => { setSelectedHousing(null); setCurrentImgIndex(0); }}>
-        <DialogContent className="bg-card border-border text-foreground w-[95vw] max-w-3xl rounded-[2rem] sm:rounded-[3rem] overflow-hidden p-0 shadow-hard" dir="rtl">
+        <DialogContent className="w-[95vw] max-w-3xl overflow-hidden rounded-[2rem] border-navy/20 bg-card p-0 text-foreground shadow-hard sm:rounded-[3rem]" dir="rtl">
           <DialogHeader>
             <DialogTitle className="sr-only">
               {selectedHousing ? `تفاصيل السكن: ${selectedHousing.title}` : 'تفاصيل السكن'}
@@ -305,13 +312,14 @@ export default function Housing() {
           {selectedHousing && (
             <div className="space-y-6 sm:space-y-8 pt-4">
               <div className="h-[280px] sm:h-[420px] overflow-hidden relative border-y border-border bg-muted/20 shadow-inner group">
-                <img src={getHousingImages(selectedHousing)[currentImgIndex] || ''} className="w-full h-full object-contain p-4 sm:p-6" />
+                <img src={getHousingImages(selectedHousing)[currentImgIndex] || ''} alt={`صورة ${selectedHousing.title} رقم ${currentImgIndex + 1}`} className="w-full h-full object-contain p-4 sm:p-6" />
                 {getHousingImages(selectedHousing).length > 1 && (
                   <>
                     <div className="absolute inset-0 flex items-center justify-between px-3 sm:px-6 transition-all">
                     <Button
                       size="icon"
                       variant="ghost"
+                      aria-label="الصورة التالية"
                       className="bg-black/60 hover:bg-black/70 text-white rounded-full h-10 w-10 sm:h-12 sm:w-12"
                       onClick={() => setCurrentImgIndex((p) => (p + 1) % getHousingImages(selectedHousing).length)}
                     >
@@ -320,6 +328,7 @@ export default function Housing() {
                     <Button
                       size="icon"
                       variant="ghost"
+                      aria-label="الصورة السابقة"
                       className="bg-black/60 hover:bg-black/70 text-white rounded-full h-10 w-10 sm:h-12 sm:w-12"
                       onClick={() => setCurrentImgIndex((p) => (p - 1 + getHousingImages(selectedHousing).length) % getHousingImages(selectedHousing).length)}
                     >

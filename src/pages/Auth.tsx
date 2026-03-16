@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Mail, Lock, User, Zap } from "lucide-react";
+import { ArrowRight, ShieldCheck, Mail, Lock, User, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -71,14 +71,13 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_12%_18%,rgba(0,194,255,0.24),transparent_36%),radial-gradient(circle_at_86%_20%,rgba(20,212,172,0.16),transparent_34%),radial-gradient(circle_at_70%_78%,rgba(255,136,0,0.16),transparent_33%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(22,36,60,.24)_1px,transparent_1px),linear-gradient(to_bottom,rgba(22,36,60,.24)_1px,transparent_1px)] bg-[size:120px_120px]" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_12%_18%,hsl(var(--primary)/.12),transparent_36%),radial-gradient(circle_at_86%_20%,hsl(var(--navy)/.10),transparent_34%)]" />
 
-      <header className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-navy/20 bg-card/90 backdrop-blur-xl supports-[backdrop-filter]:bg-card/80">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 md:px-8">
           <Link to="/" className="inline-flex items-center gap-3">
-            <span className="grid h-11 w-11 place-content-center rounded-2xl bg-primary/20 text-primary shadow-soft">
-              <Zap className="h-5 w-5" />
+            <span className="grid h-11 w-11 place-content-center overflow-hidden rounded-2xl border border-navy/20 bg-card shadow-hard-sm">
+              <img src="/UniHup-StudentLogo-markOnly-creativePurple.svg" alt="UniHub Logo" className="h-full w-full object-cover" />
             </span>
             <div className="text-right">
               <p className="text-2xl font-extrabold leading-none">UniHub Connect</p>
@@ -97,14 +96,14 @@ export default function Auth() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="grid w-full overflow-hidden rounded-3xl border border-border/20 bg-card/40 backdrop-blur-xl lg:grid-cols-2"
+          className="grid w-full overflow-hidden rounded-3xl border border-navy/20 bg-card shadow-hard lg:grid-cols-2"
         >
-          <div className="space-y-6 border-b border-border/30 p-8 lg:border-b-0 lg:border-l">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-1 text-xs">
+          <div className="space-y-6 border-b border-navy/20 p-8 lg:border-b-0 lg:border-l lg:border-navy/20">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/35 bg-primary/10 px-4 py-1 text-xs font-bold text-primary">
               <ShieldCheck className="h-4 w-4" />
               منصة جامعية عربية متكاملة
             </div>
-            <h1 className="text-4xl font-black leading-tight">
+            <h1 className="text-4xl font-black leading-tight tracking-tight text-foreground">
               {isLogin ? "مرحبًا بعودتك" : "أنشئ حسابك الآن"}
             </h1>
             <p className="leading-8 text-muted-foreground">
@@ -116,7 +115,7 @@ export default function Auth() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">الاسم الكامل</Label>
+                  <Label htmlFor="fullName" className="text-foreground font-black">الاسم الكامل</Label>
                   <div className="relative">
                     <User className="absolute right-3 top-3.5 h-4 w-4 text-muted-foreground" />
                     <Input 
@@ -135,7 +134,7 @@ export default function Auth() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">البريد الإلكتروني</Label>
+                <Label htmlFor="email" className="text-foreground font-black">البريد الإلكتروني</Label>
                 <div className="relative">
                   <Mail className="absolute right-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <Input 
@@ -154,7 +153,7 @@ export default function Auth() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">كلمة المرور</Label>
+                <Label htmlFor="password" className="text-foreground font-black">كلمة المرور</Label>
                 <div className="relative">
                   <Lock className="absolute right-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <Input 
@@ -172,7 +171,7 @@ export default function Auth() {
                 {errors.password && <p className="text-xs text-red-400">{errors.password}</p>}
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full">
+              <Button type="submit" variant="cta" disabled={loading} className="h-12 w-full font-black shadow-hard-sm">
                 {loading ? "جاري التنفيذ..." : isLogin ? "تسجيل الدخول" : "إنشاء حساب جديد"}
                 <ArrowRight className="mr-2 h-4 w-4" />
               </Button>
@@ -191,22 +190,27 @@ export default function Auth() {
             </p>
           </div>
 
-          <div className="hidden flex-col justify-between bg-[linear-gradient(180deg,rgba(0,174,255,0.12),rgba(255,98,0,0.12))] p-8 lg:flex">
+          <div className="relative hidden flex-col justify-between overflow-hidden border-r border-navy/20 p-8 lg:flex cosmic-gradient">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,.35),transparent_35%),radial-gradient(circle_at_85%_80%,rgba(251,191,36,.18),transparent_30%)]" />
             <div>
-              <p className="text-xs tracking-[0.2em] text-muted-foreground">منصة UniHub Connect</p>
-              <h2 className="mt-4 text-3xl font-black leading-tight">
+              <p className="relative text-xs tracking-[0.2em] text-white/70">منصة UniHub Connect</p>
+              <h2 className="relative mt-4 text-3xl font-black leading-tight text-white">
                 كل خدمات الجامعة
                 <br />
                 في منصة واحدة
               </h2>
             </div>
 
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-border/30 bg-card/20 p-4">
-                <p className="text-sm text-foreground">سوق جامعي + إدارة طلبات + مراجعات أدمن</p>
+            <div className="relative space-y-4">
+              <div className="rounded-2xl border border-white/35 bg-white/10 p-4 backdrop-blur-sm">
+                <p className="text-sm font-bold text-white">سوق جامعي + إدارة طلبات + مراجعات أدمن</p>
               </div>
-              <div className="rounded-2xl border border-border/30 bg-card/20 p-4">
-                <p className="text-sm text-foreground">واجهة عربية حديثة وتجربة موحدة</p>
+              <div className="rounded-2xl border border-white/35 bg-white/10 p-4 backdrop-blur-sm">
+                <p className="text-sm font-bold text-white">واجهة عربية حديثة وتجربة موحدة</p>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/20 px-4 py-1 text-xs font-black text-gold">
+                <Sparkles className="h-4 w-4" />
+                نسخة الهوية الجديدة
               </div>
             </div>
           </div>

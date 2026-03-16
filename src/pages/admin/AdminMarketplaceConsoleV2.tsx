@@ -316,7 +316,7 @@ export default function AdminMarketplaceConsoleV2() {
 
   return (
     <motion.div dir="rtl" variants={pageVariants as Variants} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={fadeUpItem as Variants} className="mb-8 flex flex-wrap items-end justify-between gap-4 rounded-3xl border border-border/30 bg-card/70 p-5 backdrop-blur-md">
+      <motion.div variants={fadeUpItem as Variants} className="mb-8 flex flex-wrap items-end justify-between gap-4 rounded-3xl border border-navy/20 bg-card p-5 shadow-hard">
         <div>
           <span className="mb-2 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
             إدارة السوق
@@ -335,7 +335,7 @@ export default function AdminMarketplaceConsoleV2() {
       </motion.div>
 
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AdminTab)} className="space-y-6">
-        <TabsList className="h-auto flex-wrap justify-start gap-2 rounded-xl border border-border/30 bg-card/70 p-1 backdrop-blur-md">
+        <TabsList className="h-auto flex-wrap justify-start gap-2 rounded-xl border border-navy/20 bg-card p-1 shadow-hard-sm">
           <AdminTabTrigger value="products" label="مراجعة المنتجات" icon={<Eye size={16} />} count={pendingProducts.length} />
           <AdminTabTrigger value="receipts" label="إيصالات الدفع" icon={<Receipt size={16} />} count={pendingReceipts.length} />
           <AdminTabTrigger value="upgrades" label="ترقيات البائعين" icon={<Store size={16} />} count={upgradeRequests.length} />
@@ -347,7 +347,7 @@ export default function AdminMarketplaceConsoleV2() {
           <motion.div variants={staggerContainer as Variants} initial="hidden" animate="show" className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {pendingProducts.map((product) => (
               <motion.div key={product.id} variants={fadeUpItem as Variants}>
-                <Card className="group overflow-hidden border-border/30 bg-card/70 backdrop-blur-md">
+                <Card className="group overflow-hidden border-navy/20 bg-card shadow-hard">
                   <div className="relative h-48 bg-muted/30">
                     {product.image_url && product.image_url[0] && (
                       <img src={product.image_url[0]} className="h-full w-full object-cover opacity-80 transition-opacity group-hover:opacity-100" alt={product.title} />
@@ -355,14 +355,14 @@ export default function AdminMarketplaceConsoleV2() {
                     <Badge className="absolute right-2 top-2 border-warning/40 bg-warning/10 text-warning">{"معلق"}</Badge>
                   </div>
                   <div className="space-y-3 p-4 text-right">
-                    <h3 className="truncate text-lg font-bold">{normalizeText(product.title)}</h3>
-                    <p className="text-xl font-bold text-secondary">{product.price} EGP</p>
+                    <h3 className="truncate text-lg font-black tracking-tight">{normalizeText(product.title)}</h3>
+                    <p className="text-xl font-black text-secondary">{product.price} EGP</p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{`البائع: ${normalizeText(product.seller?.full_name)}`}</span>
                       <span>{normalizeText(product.category)}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <Button onClick={() => productDecisionMutation.mutate({ productId: product.id, approve: true })} className="border border-primary/20 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground">{"موافقة"}</Button>
+                      <Button variant="cta" onClick={() => productDecisionMutation.mutate({ productId: product.id, approve: true })}>{"موافقة"}</Button>
                       <Button onClick={() => handleRejectClick('product', product.id)} className="border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground">{"رفض"}</Button>
                     </div>
                   </div>
@@ -374,25 +374,25 @@ export default function AdminMarketplaceConsoleV2() {
         </TabsContent>
 
         <TabsContent value="receipts">
-          <Card className="border-border/30 bg-card/70 backdrop-blur-md"><CardHeader><CardTitle className="text-right text-primary">{"إيصالات الدفع اليدوي"}</CardTitle></CardHeader><CardContent><div className="space-y-4">{pendingReceipts.map((receipt) => (<div key={receipt.id} className="flex flex-col gap-4 rounded-xl border border-border/20 bg-card/20 p-4 md:flex-row md:items-center md:justify-between"><div className="flex-1 text-right"><h4 className="text-lg font-bold">{`المشتري: ${normalizeText(receipt.buyer?.full_name)}`}</h4><p className="text-sm text-muted-foreground">{`طلب: ${receipt.order_id.slice(0,8)}...`}</p><p className="text-sm text-muted-foreground">{`الطريقة: ${normalizeText(receipt.payment_method)}`}</p><a href={receipt.receipt_link} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-primary underline">{"عرض الإيصال"}</a></div><div className="flex gap-2"><Button size="sm" className="bg-primary" onClick={() => receiptDecisionMutation.mutate({ orderId: receipt.order_id, approve: true })}>{"موافقة"}</Button><Button size="sm" variant="destructive" onClick={() => handleRejectClick('receipt', receipt.order_id)}>{"رفض"}</Button></div></div>))}{pendingReceipts.length === 0 && <EmptyState msg="لا توجد إيصالات معلقة" />}</div></CardContent></Card>
+          <Card className="border-navy/20 bg-card shadow-hard"><CardHeader><CardTitle className="text-right text-primary">{"إيصالات الدفع اليدوي"}</CardTitle></CardHeader><CardContent><div className="space-y-4">{pendingReceipts.map((receipt) => (<div key={receipt.id} className="flex flex-col gap-4 rounded-xl border border-navy/20 bg-card p-4 shadow-hard-sm md:flex-row md:items-center md:justify-between"><div className="flex-1 text-right"><h4 className="text-lg font-black">{`المشتري: ${normalizeText(receipt.buyer?.full_name)}`}</h4><p className="text-sm text-muted-foreground">{`طلب: ${receipt.order_id.slice(0,8)}...`}</p><p className="text-sm text-muted-foreground">{`الطريقة: ${normalizeText(receipt.payment_method)}`}</p><a href={receipt.receipt_link} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-primary underline">{"عرض الإيصال"}</a></div><div className="flex gap-2"><Button size="sm" variant="cta" onClick={() => receiptDecisionMutation.mutate({ orderId: receipt.order_id, approve: true })}>{"موافقة"}</Button><Button size="sm" variant="destructive" onClick={() => handleRejectClick('receipt', receipt.order_id)}>{"رفض"}</Button></div></div>))}{pendingReceipts.length === 0 && <EmptyState msg="لا توجد إيصالات معلقة" />}</div></CardContent></Card>
         </TabsContent>
 
         <TabsContent value="upgrades">
-          <Card className="border-border/30 bg-card/70 backdrop-blur-md"><CardHeader><CardTitle className="text-right text-primary">{"طلبات ترقية البائعين"}</CardTitle></CardHeader><CardContent><div className="space-y-4">{upgradeRequests.map((request) => (<div key={request.id} className="flex flex-col gap-4 rounded-xl border border-border/20 bg-card/20 p-4 md:flex-row md:items-center md:justify-between"><div className="flex-1 text-right"><h4 className="text-lg font-bold">{normalizeText(request.profile?.full_name)}</h4><p className="text-sm text-muted-foreground">{`${normalizeText(request.current_tier)} -> ${normalizeText(request.requested_tier)}`}</p><p className="mt-1 text-xs text-muted-foreground">{normalizeText(request.note)}</p></div><div className="flex gap-2"><Button size="sm" className="bg-primary" onClick={() => upgradeDecisionMutation.mutate({ requestId: request.id, approve: true })}>{"موافقة"}</Button><Button size="sm" variant="destructive" onClick={() => handleRejectClick('upgrade', request.id)}>{"رفض"}</Button></div></div>))}{upgradeRequests.length === 0 && <EmptyState msg="لا توجد طلبات ترقية معلقة" />}</div></CardContent></Card>
+          <Card className="border-navy/20 bg-card shadow-hard"><CardHeader><CardTitle className="text-right text-primary">{"طلبات ترقية البائعين"}</CardTitle></CardHeader><CardContent><div className="space-y-4">{upgradeRequests.map((request) => (<div key={request.id} className="flex flex-col gap-4 rounded-xl border border-navy/20 bg-card p-4 shadow-hard-sm md:flex-row md:items-center md:justify-between"><div className="flex-1 text-right"><h4 className="text-lg font-black">{normalizeText(request.profile?.full_name)}</h4><p className="text-sm text-muted-foreground">{`${normalizeText(request.current_tier)} -> ${normalizeText(request.requested_tier)}`}</p><p className="mt-1 text-xs text-muted-foreground">{normalizeText(request.note)}</p></div><div className="flex gap-2"><Button size="sm" variant="cta" onClick={() => upgradeDecisionMutation.mutate({ requestId: request.id, approve: true })}>{"موافقة"}</Button><Button size="sm" variant="destructive" onClick={() => handleRejectClick('upgrade', request.id)}>{"رفض"}</Button></div></div>))}{upgradeRequests.length === 0 && <EmptyState msg="لا توجد طلبات ترقية معلقة" />}</div></CardContent></Card>
         </TabsContent>
 
         <TabsContent value="payouts">
-          <Card className="border-border/30 bg-card/70 backdrop-blur-md"><CardHeader><CardTitle className="text-right text-primary">{"طلبات السحب"}</CardTitle></CardHeader><CardContent><ScrollArea className="h-[400px]"><table className="w-full text-right"><thead className="border-b border-border/40 text-xs text-muted-foreground"><tr><th className="pb-3">{"البائع"}</th><th className="pb-3">{"المبلغ"}</th><th className="pb-3">{"الإجراء"}</th></tr></thead><tbody className="divide-y divide-border/20">{payoutRequests.map((payout) => (<tr key={payout.id}><td className="py-4 font-medium">{normalizeText(payout.profile?.full_name)}</td><td className="py-4 text-2xl font-black text-primary">{payout.amount} <span className="text-xs text-muted-foreground">{normalizeText(payout.currency)}</span></td><td className="py-4"><Button onClick={() => payoutDecisionMutation.mutate({ payoutId: payout.id })} className="h-8 rounded-lg bg-primary text-xs font-bold text-primary-foreground hover:bg-primary/90">{"تأكيد الدفع"}</Button></td></tr>))}</tbody></table>{payoutRequests.length === 0 && <EmptyState msg="لا توجد طلبات سحب" />}</ScrollArea></CardContent></Card>
+          <Card className="border-navy/20 bg-card shadow-hard"><CardHeader><CardTitle className="text-right text-primary">{"طلبات السحب"}</CardTitle></CardHeader><CardContent><ScrollArea className="h-[400px]"><table className="w-full text-right"><thead className="border-b border-navy/20 text-xs text-muted-foreground"><tr><th className="pb-3">{"البائع"}</th><th className="pb-3">{"المبلغ"}</th><th className="pb-3">{"الإجراء"}</th></tr></thead><tbody className="divide-y divide-navy/20">{payoutRequests.map((payout) => (<tr key={payout.id}><td className="py-4 font-medium">{normalizeText(payout.profile?.full_name)}</td><td className="py-4 text-2xl font-black text-primary">{payout.amount} <span className="text-xs text-muted-foreground">{normalizeText(payout.currency)}</span></td><td className="py-4"><Button variant="cta" onClick={() => payoutDecisionMutation.mutate({ payoutId: payout.id })} className="h-8 rounded-lg text-xs font-black">{"تأكيد الدفع"}</Button></td></tr>))}</tbody></table>{payoutRequests.length === 0 && <EmptyState msg="لا توجد طلبات سحب" />}</ScrollArea></CardContent></Card>
         </TabsContent>
 
         <TabsContent value="disputes">
-          <Card className="border-border/30 bg-card/70 backdrop-blur-md"><CardHeader><CardTitle className="text-right text-primary">{"النزاعات"}</CardTitle></CardHeader><CardContent><EmptyState msg="وحدة النزاعات ستتم إضافتها قريبًا" /></CardContent></Card>
+          <Card className="border-navy/20 bg-card shadow-hard"><CardHeader><CardTitle className="text-right text-primary">{"النزاعات"}</CardTitle></CardHeader><CardContent><EmptyState msg="وحدة النزاعات ستتم إضافتها قريبًا" /></CardContent></Card>
         </TabsContent>
       </Tabs>
 
       {/* Rejection Dialog */}
       <Dialog open={!!rejectDialog} onOpenChange={(open) => !open && setRejectDialog(null)}>
-        <DialogContent className="sm:max-w-[425px]" dir="rtl">
+        <DialogContent className="sm:max-w-[425px] border-navy/20 bg-card" dir="rtl">
           <DialogHeader>
             <DialogTitle className="text-right">تأكيد الرفض</DialogTitle>
             <DialogDescription className="text-right">
@@ -414,7 +414,7 @@ export default function AdminMarketplaceConsoleV2() {
 
 function AdminTabTrigger({ value, label, icon, count }: { value: AdminTab; label: string; icon: ReactNode; count?: number }) {
   return (
-    <TabsTrigger value={value} className="h-10 gap-2 rounded-lg px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+    <TabsTrigger value={value} className="h-10 gap-2 rounded-lg px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-hard-sm">
       {icon} {normalizeText(label)}
       {!!count && count > 0 && <span className="mr-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] text-destructive-foreground">{count}</span>}
     </TabsTrigger>
@@ -422,7 +422,7 @@ function AdminTabTrigger({ value, label, icon, count }: { value: AdminTab; label
 }
 
 function StatBadge({ label, value, icon, color }: { label: string; value: number; icon: ReactNode; color: "blue" | "green" | "yellow" | "orange" }) {
-  return <div className={`flex items-center gap-2 rounded-lg border border-border/30 px-3 py-1.5 ${BADGE_COLORS[color]}`}>{icon} <span className="text-xs font-bold">{normalizeText(label)}: {value}</span></div>;
+  return <div className={`flex items-center gap-2 rounded-lg border border-navy/20 px-3 py-1.5 shadow-hard-sm ${BADGE_COLORS[color]}`}>{icon} <span className="text-xs font-bold">{normalizeText(label)}: {value}</span></div>;
 }
 
 function EmptyState({ msg }: { msg: string }) {

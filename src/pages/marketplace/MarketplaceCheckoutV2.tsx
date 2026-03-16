@@ -301,7 +301,7 @@ export default function MarketplaceCheckoutV2() {
     <div dir="rtl" className="mx-auto max-w-4xl space-y-6 text-right">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">{"إتمام الشراء"}</h1>
+          <h1 className="text-3xl font-black tracking-tight">{"إتمام الشراء"}</h1>
           <p className="text-sm text-muted-foreground">
             {isCartMode
               ? "إتمام السلة مع اختيار العنوان وإنشاء الطلب من الباك إند"
@@ -309,13 +309,13 @@ export default function MarketplaceCheckoutV2() {
           </p>
         </div>
         <Link to="/marketplace">
-          <Button variant="outline">{"الرجوع إلى السوق"}</Button>
+          <Button variant="outline" className="border-navy/30">{"الرجوع إلى السوق"}</Button>
         </Link>
       </div>
 
       {isCartMode && (
         <>
-          <Card>
+          <Card className="border-navy/20 shadow-hard">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5" />
@@ -330,7 +330,7 @@ export default function MarketplaceCheckoutV2() {
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-lg border border-border/70 p-3"
+                  className="flex items-center justify-between rounded-xl border border-navy/20 p-3 shadow-hard-sm"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 overflow-hidden rounded bg-muted/40">
@@ -364,7 +364,7 @@ export default function MarketplaceCheckoutV2() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-navy/20 shadow-hard">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
@@ -383,10 +383,10 @@ export default function MarketplaceCheckoutV2() {
                   key={address.id}
                   type="button"
                   onClick={() => setSelectedAddressId(address.id)}
-                  className={`w-full rounded-lg border p-3 text-right transition ${
+                  className={`w-full rounded-xl border p-3 text-right transition shadow-hard-sm ${
                     selectedAddressId === address.id
                       ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/40"
+                      : "border-navy/20 hover:border-primary/40"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -406,7 +406,7 @@ export default function MarketplaceCheckoutV2() {
         </>
       )}
 
-      <Card>
+      <Card className="border-navy/20 shadow-hard">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5" />
@@ -419,10 +419,10 @@ export default function MarketplaceCheckoutV2() {
               type="button"
               key={option.code}
               onClick={() => setPaymentMethod(option.code)}
-              className={`rounded-lg border p-4 text-right transition ${
+              className={`rounded-xl border p-4 text-right transition shadow-hard-sm ${
                 paymentMethod === option.code
                   ? "border-primary bg-primary/10"
-                  : "border-border hover:border-primary/40"
+                  : "border-navy/20 hover:border-primary/40"
               }`}
             >
               <p className="font-semibold">{option.label}</p>
@@ -432,7 +432,7 @@ export default function MarketplaceCheckoutV2() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-navy/20 shadow-hard">
         <CardHeader>
           <CardTitle>{"ملخص الطلب"}</CardTitle>
         </CardHeader>

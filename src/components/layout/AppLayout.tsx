@@ -33,10 +33,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <AppSidebar />
 
       <SidebarInset className="min-w-0 bg-background">
-        <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_12%_18%,rgba(59,130,246,0.14),transparent_30%),radial-gradient(circle_at_86%_20%,rgba(29,78,216,0.12),transparent_28%)]" />
-        <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(59,130,246,.14)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,130,246,.14)_1px,transparent_1px)] bg-[size:140px_140px]" />
+        <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_10%_12%,rgba(59,130,246,.10),transparent_33%),radial-gradient(circle_at_85%_18%,rgba(30,58,138,.10),transparent_28%)]" />
 
-        <header className="sticky top-0 z-30 h-16 border-b border-border bg-card/80 px-6 backdrop-blur-xl supports-[backdrop-filter]:bg-card/65">
+        <header className="sticky top-0 z-30 h-16 border-b border-navy/20 bg-card/90 px-6 backdrop-blur-xl supports-[backdrop-filter]:bg-card/80">
           <div className="flex h-full items-center justify-between">
             <SidebarTrigger className="text-muted-foreground transition-colors hover:text-primary md:hidden" />
 
@@ -50,13 +49,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
             <div className="flex items-center gap-2">
               {/* Rank Badge */}
-              <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border ${getRank(profile).color}`}>
+              <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-hard-sm ${getRank(profile).color}`}>
                 <Trophy className="h-3.5 w-3.5" />
                 <span className="text-[10px] font-black">{getRank(profile).label}</span>
               </div>
 
               {/* Global Wallet Display */}
-              <div className="hidden md:flex items-center gap-2 bg-card/30 border border-border px-3 py-1.5 rounded-xl mr-2">
+              <div className="hidden md:flex items-center gap-2 bg-card border border-navy/20 px-3 py-1.5 rounded-xl mr-2 shadow-hard-sm">
                 <div className="bg-primary/20 p-1.5 rounded-lg">
                   <Wallet className="h-4 w-4 text-primary" />
                 </div>
@@ -65,14 +64,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
               <button
                 onClick={() => navigate("/profile")}
-                className="rounded-xl p-2.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
+                className="rounded-xl p-2.5 text-muted-foreground transition-all pressable hover:bg-primary/10 hover:text-primary shadow-hard-sm"
               >
                 <User className="h-5 w-5" />
               </button>
 
               <button
                 onClick={() => navigate("/notifications")}
-                className="relative rounded-xl p-2.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-primary"
+                className="relative rounded-xl p-2.5 text-muted-foreground transition-all pressable hover:bg-primary/10 hover:text-primary shadow-hard-sm"
               >
                 <Bell className="h-5 w-5" />
                   <span className="absolute right-2.5 top-2.5 h-2 w-2 animate-pulse rounded-full bg-primary" />

@@ -21,9 +21,8 @@ export default defineConfig(() => ({
       output: {
         manualChunks: {
           react_vendor: ["react", "react-dom", "react-router-dom"],
-          query_vendor: ["@tanstack/react-query"],
           supabase_vendor: ["@supabase/supabase-js"],
-          ui_vendor: ["framer-motion", "lucide-react", "sonner"],
+          app_vendor: ["@tanstack/react-query", "framer-motion", "lucide-react", "sonner"],
         },
       },
     },

@@ -9,7 +9,6 @@ import {
   Sparkles,
   Trophy,
   Truck,
-  Zap,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -93,14 +92,13 @@ export default function Index() {
 
   return (
     <div id="الرئيسية" className="min-h-screen overflow-x-hidden bg-background text-foreground">
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_12%_18%,hsl(var(--primary)/.16),transparent_36%),radial-gradient(circle_at_86%_20%,hsl(var(--success)/.12),transparent_34%),radial-gradient(circle_at_70%_78%,hsl(var(--warning)/.10),transparent_33%)]" />
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(to_right,rgba(59,130,246,.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,130,246,.08)_1px,transparent_1px)] bg-[size:120px_120px]" />
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(circle_at_12%_18%,hsl(var(--primary)/.10),transparent_36%),radial-gradient(circle_at_86%_20%,hsl(var(--navy)/.08),transparent_34%)]" />
 
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 md:px-8">
           <Link to="/" className="inline-flex items-center gap-3">
-            <span className="grid h-11 w-11 place-content-center rounded-2xl bg-primary/10 text-primary border border-primary/30 shadow-hard-sm">
-              <Zap className="h-5 w-5" />
+            <span className="grid h-11 w-11 place-content-center overflow-hidden rounded-2xl border border-navy/20 bg-card shadow-hard-sm">
+              <img src="/UniHup-StudentLogo-markOnly-creativePurple.svg" alt="UniHub Logo" className="h-full w-full object-cover" />
             </span>
             <div className="text-right">
               <p className="text-2xl font-extrabold leading-none">UniHub Connect</p>
@@ -125,19 +123,20 @@ export default function Index() {
       </header>
 
       <main className="mx-auto w-full max-w-7xl px-5 pb-24 md:px-8">
-        <section id="المشهد" className="relative pt-14 md:pt-20">
+        <section id="المشهد" className="relative mt-8 overflow-hidden rounded-3xl border border-navy/30 cosmic-gradient px-6 py-14 shadow-hard md:mt-10 md:px-10 md:py-20">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,.35),transparent_35%),radial-gradient(circle_at_85%_80%,rgba(251,191,36,.18),transparent_30%)]" />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55 }}
-            className="mx-auto max-w-5xl text-center"
+            className="relative mx-auto max-w-5xl text-center"
           >
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/35 bg-primary/10 px-5 py-2 text-sm font-bold text-primary">
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/20 px-5 py-2 text-sm font-bold text-gold">
               <Sparkles className="h-4 w-4" />
               الجيل الجديد لإدارة الحياة الجامعية
             </div>
 
-            <h1 className="text-5xl font-black leading-[1.2] tracking-tight text-foreground md:text-7xl">
+            <h1 className="text-5xl font-black leading-[1.2] tracking-tight text-white md:text-7xl">
               منصة عربية قوية
               <br />
               تجمع كل خدمات الطالب
@@ -145,14 +144,14 @@ export default function Index() {
               في مكان واحد
             </h1>
 
-            <p className="mx-auto mt-8 max-w-4xl text-xl leading-9 text-muted-foreground">
+            <p className="mx-auto mt-8 max-w-4xl text-xl leading-9 text-white/80">
               دفع، سوق، سكن، رياضة، وإشعارات فورية بتجربة سلسة وسريعة تناسب الجامعات العربية
               على الجوال والويب.
             </p>
 
             <div id="ابدأ" className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Link to="/auth">
-                <Button className="h-14 min-w-[230px] rounded-2xl text-xl font-extrabold shadow-hard interactive-lift">
+                <Button variant="cta" className="h-14 min-w-[230px] rounded-2xl text-xl font-extrabold shadow-hard interactive-lift">
                   ابدأ رحلتك الآن
                   <ArrowLeft className="mr-2 h-5 w-5" />
                 </Button>
@@ -160,7 +159,7 @@ export default function Index() {
               <a href="#الخدمات">
                 <Button
                   variant="outline"
-                  className="h-14 min-w-[230px] rounded-2xl border-border bg-card text-xl font-bold text-foreground hover:bg-muted shadow-hard-sm interactive-lift"
+                  className="h-14 min-w-[230px] rounded-2xl border-white/40 bg-white/10 text-xl font-bold text-white hover:bg-white/20 shadow-hard-sm interactive-lift"
                 >
                   تصفح الخدمات
                 </Button>
@@ -235,6 +234,20 @@ export default function Index() {
             ))}
           </div>
         </section>
+
+        <footer className="mt-16 overflow-hidden rounded-3xl border border-navy/30 cosmic-gradient p-8 shadow-hard">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-2xl font-black tracking-tight text-white">UniHub Connect</p>
+              <p className="text-sm text-white/75">منصة الطالب الجامعي الشاملة - تجربة عربية عصرية</p>
+            </div>
+            <Link to="/auth">
+              <Button variant="cta" className="rounded-xl px-6 font-black shadow-hard-sm">
+                ابدأ الآن
+              </Button>
+            </Link>
+          </div>
+        </footer>
       </main>
     </div>
   );

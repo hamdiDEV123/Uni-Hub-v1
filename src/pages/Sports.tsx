@@ -125,14 +125,14 @@ export default function SportsHub() {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8 font-sans" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 rounded-2xl border border-border bg-card p-6 shadow-hard">
+      <div className="mb-12 flex flex-col items-center justify-between gap-6 rounded-2xl border border-navy/20 bg-card p-6 shadow-hard md:flex-row">
         <div className="text-right">
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-none">ملتقى الرياضة</h1>
           <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">نظم واحجز الأنشطة الرياضية</p>
         </div>
 
         <div className="flex flex-wrap justify-center items-center gap-4">
-          <div className="flex bg-card p-1 rounded-xl border border-border text-[10px] font-black shadow-hard-sm">
+          <div className="flex rounded-xl border border-navy/20 bg-card p-1 text-[10px] font-black shadow-hard-sm">
             {['all', 'football', 'padel'].map((s) => (
               <button key={s} onClick={() => setSportFilter(s)} className={`px-6 py-2 rounded-lg transition-all active:translate-y-1 active:shadow-none ${sportFilter === s ? 'bg-primary text-primary-foreground shadow-hard-sm' : 'text-muted-foreground hover:text-foreground'}`}>
                 {s === 'all' ? 'الكل' : s === 'football' ? 'كرة' : 'بادل'}
@@ -142,9 +142,9 @@ export default function SportsHub() {
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 h-12 rounded-xl font-black px-8 shadow-hard active:translate-y-1 active:shadow-hard-sm">أنشئ حدث +</Button>
+              <Button variant="cta" className="h-12 rounded-xl px-8 font-black">أنشئ حدث +</Button>
             </DialogTrigger>
-            <DialogContent className="bg-card border-border text-foreground rounded-2xl max-h-[95vh] overflow-y-auto shadow-hard">
+            <DialogContent className="max-h-[95vh] overflow-y-auto rounded-2xl border-navy/20 bg-card text-foreground shadow-hard">
               <DialogHeader>
                 <DialogTitle className="text-right text-2xl font-extrabold tracking-tight text-foreground">إنشاء حدث رياضي</DialogTitle>
                 <DialogDescription className="text-right text-xs font-sans italic text-muted-foreground">املأ التفاصيل التالية لنشر الحدث</DialogDescription>
@@ -209,7 +209,7 @@ export default function SportsHub() {
             const alreadyJoined = act.joined_users?.includes(user?.id);
 
             return (
-              <motion.div key={act.id} layout initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-card border border-border p-6 rounded-2xl group hover:border-primary/60 transition-all flex flex-col shadow-hard overflow-hidden relative">
+              <motion.div key={act.id} layout initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="group relative flex flex-col overflow-hidden rounded-2xl border border-navy/20 bg-card p-6 shadow-hard transition-all hover:border-primary/60">
                 <div className="flex justify-between items-start mb-6">
                   <Badge className={`font-black rounded-full px-4 py-1 border border-border ${isFull ? 'bg-foreground text-background' : 'bg-primary text-primary-foreground'}`}>
                     {isFull ? 'مكتمل العدد' : `متاح ${act.max_players - act.current_players} أماكن`}
@@ -232,12 +232,12 @@ export default function SportsHub() {
 
                   <div className="pt-6 mt-auto flex items-center justify-between">
                     <div className="flex gap-2">
-                      <Button onClick={() => window.open(`https://wa.me/20${act.contact_phone}`, '_blank')} className="bg-card text-foreground hover:text-primary rounded-xl h-11 w-11 p-0 transition-all border border-border shadow-hard-sm active:translate-y-1 active:shadow-hard-sm"><MessageCircle size={20} /></Button>
+                      <Button aria-label={`تواصل واتساب بخصوص ${act.title}`} onClick={() => window.open(`https://wa.me/20${act.contact_phone}`, '_blank')} className="bg-card text-foreground hover:text-primary rounded-xl h-11 w-11 p-0 transition-all border border-border shadow-hard-sm active:translate-y-1 active:shadow-hard-sm"><MessageCircle size={20} /></Button>
 
                       <Button
                         disabled={isFull || alreadyJoined}
                         onClick={() => joinEvent.mutate(act)}
-                        className={`font-black rounded-xl h-11 px-6 transition-all active:translate-y-1 active:shadow-none flex gap-2 shadow-hard-sm ${alreadyJoined ? 'bg-card text-primary border border-primary' : isFull ? 'bg-muted text-muted-foreground cursor-not-allowed shadow-none border border-border' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
+                        className={`flex h-11 gap-2 rounded-xl px-6 font-black shadow-hard-sm transition-all active:translate-y-1 active:shadow-none ${alreadyJoined ? 'border border-primary bg-card text-primary' : isFull ? 'cursor-not-allowed border border-navy/20 bg-muted text-muted-foreground shadow-none' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                       >
                         {alreadyJoined ? <><CheckCircle2 size={16} /> مُنضم</> : 'انضم'}
                       </Button>

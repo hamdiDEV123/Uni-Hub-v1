@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { RouteErrorBoundary } from "@/components/errors/RouteErrorBoundary";
 import { useQuery } from "@tanstack/react-query";
 import { callRpc } from "@/backend/rpc";
+import { getReleaseFlags } from "@/lib/releaseFlags";
 
 const Index = lazy(() => import("./pages/Index"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -26,6 +27,7 @@ const MarketplaceCheckout = lazy(() => import("./pages/marketplace/MarketplaceCh
 const MarketplaceProduct = lazy(() => import("./pages/marketplace/ProductLanding"));
 const MarketplaceOrders = lazy(() => import("./pages/marketplace/MarketplaceOrdersV2"));
 const AdminMarketplaceConsole = lazy(() => import("./pages/admin/AdminMarketplaceConsoleV2"));
+const AdminLegacy = lazy(() => import("./pages/Admin"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 
 const queryClient = new QueryClient();
@@ -35,6 +37,11 @@ const RouteLoading = () => (
     {"جاري تحميل الصفحة..."}
   </div>
 );
+
+function FeatureRoute({ enabled, fallback, children }: { enabled: boolean; fallback: React.ReactNode; children: React.ReactNode }) {
+  if (!enabled) return <>{fallback}</>;
+  return <>{children}</>;
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -73,6 +80,9 @@ const App = () => (
       <GlowingCursor />
       <BrowserRouter>
         <AuthProvider>
+          {(() => {
+            const flags = getReleaseFlags();
+            return (
           <Suspense fallback={<RouteLoading />}>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -101,21 +111,31 @@ const App = () => (
               <Route
                 path="/marketplace/checkout"
                 element={
-                  <ProtectedRoute>
-                    <RouteErrorBoundary routeName="إتمام الشراء">
-                      <MarketplaceCheckout />
-                    </RouteErrorBoundary>
-                  </ProtectedRoute>
+                  <FeatureRoute
+                    enabled={flags.marketplaceCheckoutEnabled}
+                    fallback={<Navigate to="/marketplace" replace />}
+                  >
+                    <ProtectedRoute>
+                      <RouteErrorBoundary routeName="إتمام الشراء">
+                        <MarketplaceCheckout />
+                      </RouteErrorBoundary>
+                    </ProtectedRoute>
+                  </FeatureRoute>
                 }
               />
               <Route
                 path="/marketplace/orders"
                 element={
-                  <ProtectedRoute>
-                    <RouteErrorBoundary routeName="الطلبات">
-                      <MarketplaceOrders />
-                    </RouteErrorBoundary>
-                  </ProtectedRoute>
+                  <FeatureRoute
+                    enabled={flags.marketplaceOrdersEnabled}
+                    fallback={<Navigate to="/marketplace" replace />}
+                  >
+                    <ProtectedRoute>
+                      <RouteErrorBoundary routeName="الطلبات">
+                        <MarketplaceOrders />
+                      </RouteErrorBoundary>
+                    </ProtectedRoute>
+                  </FeatureRoute>
                 }
               />
               <Route path="/delivery" element={<ProtectedRoute><Delivery /></ProtectedRoute>} />
@@ -130,7 +150,7 @@ const App = () => (
                 element={
                   <AdminRoute>
                     <RouteErrorBoundary routeName="لوحة إدارة السوق">
-                      <AdminMarketplaceConsole />
+                      {flags.adminMarketplaceV2Enabled ? <AdminMarketplaceConsole /> : <AdminLegacy />}
                     </RouteErrorBoundary>
                   </AdminRoute>
                 }
@@ -140,7 +160,7 @@ const App = () => (
                 element={
                   <AdminRoute>
                     <RouteErrorBoundary routeName="لوحة إدارة السوق">
-                      <AdminMarketplaceConsole />
+                      {flags.adminMarketplaceV2Enabled ? <AdminMarketplaceConsole /> : <AdminLegacy />}
                     </RouteErrorBoundary>
                   </AdminRoute>
                 }
@@ -148,6 +168,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+            );
+          })()}
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -164,7 +164,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-transparent p-6 text-right text-foreground font-sans" dir="rtl">
-      <div className="mb-8 flex items-center justify-between rounded-3xl border border-border bg-card p-5 shadow-hard">
+      <div className="mb-8 flex items-center justify-between rounded-3xl border border-navy/20 bg-card p-5 shadow-hard">
         <div>
           <h1 className="text-3xl font-black text-primary uppercase">الملف الشخصي</h1>
           <p className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase text-right">بيانات المستخدم الأساسية</p>
@@ -176,21 +176,21 @@ export default function Profile() {
 
       {/* إحصائيات الحساب السريعة */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <Card className="bg-card border-border p-4 flex flex-col items-center justify-center gap-2 rounded-[2rem] shadow-hard interactive-lift">
+        <Card className="flex flex-col items-center justify-center gap-2 rounded-[2rem] border-navy/20 bg-card p-4 shadow-hard interactive-lift">
           <div className="bg-primary/10 p-2 rounded-full text-primary"><TrendingUp size={20} /></div>
           <div className="text-center">
             <p className="text-[10px] text-muted-foreground font-bold">إجمالي الأرباح</p>
             <p className="text-xl font-black text-foreground">{totalEarnings} ج.م</p>
           </div>
         </Card>
-        <Card className="bg-card border-border p-4 flex flex-col items-center justify-center gap-2 rounded-[2rem] shadow-hard interactive-lift">
+        <Card className="flex flex-col items-center justify-center gap-2 rounded-[2rem] border-navy/20 bg-card p-4 shadow-hard interactive-lift">
           <div className="bg-success/10 p-2 rounded-full text-success"><Award size={20} /></div>
           <div className="text-center">
             <p className="text-[10px] text-muted-foreground font-bold">المهام المكتملة</p>
             <p className="text-xl font-black text-foreground">{completedMissions}</p>
           </div>
         </Card>
-        <Card className="bg-card border-border p-4 flex flex-col items-center justify-center gap-2 rounded-[2rem] shadow-hard interactive-lift">
+        <Card className="flex flex-col items-center justify-center gap-2 rounded-[2rem] border-navy/20 bg-card p-4 shadow-hard interactive-lift">
           <div className="bg-warning/10 p-2 rounded-full text-warning"><Star size={20} /></div>
           <div className="text-center">
             <p className="text-[10px] text-muted-foreground font-bold">متوسط التقييم</p>
@@ -200,7 +200,7 @@ export default function Profile() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="w-full bg-muted p-1 rounded-2xl border border-border h-14 shadow-hard-sm">
+        <TabsList className="h-14 w-full rounded-2xl border border-navy/20 bg-muted p-1 shadow-hard-sm">
           <TabsTrigger value="reviews" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12">التقييمات</TabsTrigger>
           <TabsTrigger value="history" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12">سجل الطلبات</TabsTrigger>
           <TabsTrigger value="overview" className="flex-1 rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12">نظرة عامة</TabsTrigger>
@@ -209,7 +209,7 @@ export default function Profile() {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-6 text-right">
-              <Card className="border-border bg-card p-8 rounded-[2.5rem] shadow-hard">
+              <Card className="rounded-[2.5rem] border-navy/20 bg-card p-8 shadow-hard">
                 <h2 className="mb-6 flex items-center gap-2 text-lg font-black text-primary justify-end">
                   البيانات الشخصية <User size={20} />
                 </h2>
@@ -232,9 +232,9 @@ export default function Profile() {
                 </div>
               </Card>
 
-              <Card className="border-border bg-card p-8 rounded-[2.5rem] border-r-4 border-r-primary shadow-hard">
+              <Card className="rounded-[2.5rem] border-navy/20 border-r-4 border-r-primary bg-card p-8 shadow-hard">
                 <div className="flex items-center justify-between">
-                  <Button className="font-black h-12 rounded-xl px-6 transition-all active:scale-95 shadow-hard-sm">شحن</Button>
+                  <Button variant="cta" className="h-12 rounded-xl px-6 font-black">شحن</Button>
                   <div className="flex items-center gap-4 flex-row-reverse text-right">
                     <div className="rounded-2xl bg-primary/10 p-4 text-primary border border-primary/25">
                       <Wallet size={24} />
@@ -271,7 +271,7 @@ export default function Profile() {
                       onChange={(e) => e.target.files?.[0] && uploadIdCard.mutate(e.target.files[0])}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
-                    <div className="border-2 border-dashed border-border p-12 rounded-[2.5rem] text-center group-hover:border-primary/50 transition-all bg-muted/20">
+                    <div className="rounded-[2.5rem] border-2 border-dashed border-navy/20 bg-muted/20 p-12 text-center transition-all group-hover:border-primary/50">
                       {isUploading ? <Loader2 className="mx-auto animate-spin text-primary" /> : <Camera className="mx-auto text-muted-foreground mb-2" size={40} />}
                       <span className="text-[10px] font-black text-muted-foreground block mt-2 uppercase tracking-widest">ارفع بطاقة الجامعة</span>
                     </div>
@@ -302,7 +302,7 @@ export default function Profile() {
 
         <TabsContent value="history" className="space-y-4">
           {history?.map((order) => (
-            <Card key={order.id} className="bg-card border-border p-4 rounded-3xl flex items-center justify-between shadow-hard-sm interactive-lift">
+            <Card key={order.id} className="flex items-center justify-between rounded-3xl border-navy/20 bg-card p-4 shadow-hard-sm interactive-lift">
               <div className="text-left">
                 <Badge className={order.status === 'delivered' ? 'bg-success/10 text-success border border-success/30' : 'bg-primary/10 text-primary border border-primary/30'}>
                   {order.status === 'delivered' ? 'مكتمل' : 'قيد التنفيذ'}
@@ -322,7 +322,7 @@ export default function Profile() {
 
         <TabsContent value="reviews" className="space-y-4">
           {reviews?.map((review) => (
-            <Card key={review.id} className="bg-card border-border p-4 rounded-3xl shadow-hard-sm interactive-lift">
+            <Card key={review.id} className="rounded-3xl border-navy/20 bg-card p-4 shadow-hard-sm interactive-lift">
               <div className="flex justify-between items-start mb-2">
                 <div className="flex gap-1">
                   {[...Array(5)].map((_, i) => (

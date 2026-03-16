@@ -64,8 +64,8 @@ export function AppSidebar() {
   const isAdmin = role === "admin";
 
   return (
-    <Sidebar side="right" className="z-30 border-l border-border/50 bg-card/80 shadow-hard backdrop-blur-xl supports-[backdrop-filter]:bg-card/70" dir="rtl">
-      <div className="sticky top-0 z-10 border-b border-border/50 bg-card/85 p-5 backdrop-blur-xl supports-[backdrop-filter]:bg-card/75">
+    <Sidebar side="right" className="z-30 border-l border-navy/20 bg-card/90 shadow-hard backdrop-blur-xl supports-[backdrop-filter]:bg-card/80" dir="rtl">
+      <div className="sticky top-0 z-10 border-b border-navy/20 bg-card p-5 backdrop-blur-xl supports-[backdrop-filter]:bg-card/90">
         <img src="/UniHup-StudentLogo-markOnly-creativePurple.svg" alt="UniHub Logo" className="h-12 w-auto mx-auto" />
         <p className="mt-2 text-center font-mono text-xs tracking-tighter text-muted-foreground">
           {isAdmin
@@ -86,8 +86,8 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                        className="flex flex-row-reverse items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-muted-foreground transition-all pressable hover:bg-primary/10 hover:text-primary"
-                        activeClassName="bg-primary/10 text-primary shadow-hard"
+                        className="flex flex-row-reverse items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold text-muted-foreground transition-all pressable hover:bg-primary/10 hover:text-primary"
+                        activeClassName="bg-primary/10 text-primary shadow-hard-sm border border-primary/30"
                     >
                       <span>{item.title}</span>
                       <item.icon className="h-4 w-4" />
@@ -111,8 +111,8 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
-                        className="flex flex-row-reverse items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-muted-foreground transition-all pressable hover:bg-primary/10 hover:text-primary"
-                        activeClassName="bg-primary/10 text-primary shadow-hard"
+                        className="flex flex-row-reverse items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold text-muted-foreground transition-all pressable hover:bg-primary/10 hover:text-primary"
+                        activeClassName="bg-primary/10 text-primary shadow-hard-sm border border-primary/30"
                       >
                         <span>{item.title}</span>
                         <item.icon className="h-4 w-4" />
@@ -126,8 +126,8 @@ export function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/50 p-3">
-        <div className="mb-2 truncate px-3 py-2 font-mono text-[10px] text-muted-foreground">
+      <SidebarFooter className="border-t border-navy/20 p-3">
+        <div className="mb-2 truncate rounded-xl border border-navy/20 bg-muted/20 px-3 py-2 font-mono text-[10px] text-muted-foreground shadow-hard-sm">
           {"\u0627\u0644\u062d\u0633\u0627\u0628:"} {user?.email?.split("@")[0]}
         </div>
         <button

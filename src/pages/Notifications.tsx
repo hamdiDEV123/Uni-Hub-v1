@@ -99,12 +99,12 @@ export default function Notifications() {
 
   return (
     <motion.div dir="rtl" variants={pageVariants} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={fadeUpItem} className="flex items-center justify-between rounded-3xl border border-border bg-card p-5 shadow-hard">
+      <motion.div variants={fadeUpItem} className="flex items-center justify-between rounded-3xl border border-navy/20 bg-card p-5 shadow-hard">
         <div>
           <span className="mb-2 inline-flex items-center rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
             مركز الإشعارات
           </span>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+          <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight text-foreground">
             <Bell className="h-6 w-6 text-primary" />
             {"الإشعارات"}
             {unreadCount > 0 && (
@@ -116,7 +116,7 @@ export default function Notifications() {
           <p className="text-sm text-muted-foreground">{"تابع آخر أحداث المنصة بشكل فوري"}</p>
         </div>
         {unreadCount > 0 && (
-          <Button size="sm" variant="outline" onClick={() => markAllRead.mutate()} className="gap-1 border-primary/30 text-primary text-xs shadow-hard-sm hover:bg-primary/10">
+          <Button size="sm" variant="outline" onClick={() => markAllRead.mutate()} className="gap-1 border-navy/30 text-primary text-xs shadow-hard-sm hover:bg-primary/10">
             <CheckCheck className="h-3 w-3" /> {"تعليم الكل كمقروء"}
           </Button>
         )}
@@ -137,7 +137,7 @@ export default function Notifications() {
                 key={n.id}
                 variants={fadeUpItem}
                 className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 shadow-hard-sm transition-all interactive-lift ${
-                  !n.is_read ? "border-primary/35 bg-primary/5" : "border-border bg-card opacity-80"
+                  !n.is_read ? "border-primary/35 bg-primary/5" : "border-navy/20 bg-card opacity-80"
                 }`}
                 onClick={() => openNotification.mutate(n as PlatformNotification)}
               >

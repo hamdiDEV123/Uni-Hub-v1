@@ -135,7 +135,7 @@ export default function DeliveryHub() {
     <div className="min-h-screen bg-background p-4 pb-24 text-right text-foreground font-sans" dir="rtl">
       
       {/* رأس الصفحة العلوي */}
-      <div className="mb-6 flex justify-between items-center border-b border-border pb-4">
+      <div className="mb-6 flex justify-between items-center border-b border-navy/20 pb-4">
         <div className="flex items-center gap-2">
            {profile?.verified_status ? <ShieldCheck size={20} className="text-success"/> : <Lock size={20} className="text-warning"/>}
            <span className={`text-[10px] font-black uppercase ${profile?.verified_status ? 'text-success' : 'text-warning'}`}>
@@ -149,11 +149,11 @@ export default function DeliveryHub() {
       </div>
 
       {/* فلتر الجامعات */}
-      <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar flex-row-reverse mb-4">
+      <div className="mb-4 flex flex-row-reverse gap-2 overflow-x-auto pb-4 no-scrollbar">
         {universities.map((uni) => (
           <button key={uni} onClick={() => setSelectedUni(uni)}
-            className={`whitespace-nowrap px-5 py-2 rounded-xl font-black text-[10px] border transition-all duration-300 ${
-              selectedUni === uni ? 'bg-primary text-primary-foreground border-primary shadow-hard-sm' : 'bg-card border-border text-muted-foreground'
+            className={`whitespace-nowrap rounded-xl border px-5 py-2 text-[10px] font-black transition-all duration-300 ${
+              selectedUni === uni ? 'border-primary bg-primary text-primary-foreground shadow-hard-sm' : 'border-navy/20 bg-card text-muted-foreground'
             }`}>
             {uni}
           </button>
@@ -161,7 +161,7 @@ export default function DeliveryHub() {
       </div>
 
       {/* فلتر العرض */}
-      <div className="bg-muted/30 p-1 rounded-2xl flex flex-row-reverse mb-8 border border-border shadow-hard-sm">
+      <div className="mb-8 flex flex-row-reverse rounded-2xl border border-navy/20 bg-muted/30 p-1 shadow-hard-sm">
         <button onClick={() => setViewMode('runner')} className={`flex-1 py-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all ${viewMode === 'runner' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}><Search size={16} /> تصفح الطلبات</button>
         <button onClick={() => setViewMode('requester')} className={`flex-1 py-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all ${viewMode === 'requester' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}><ShoppingBag size={16} /> إدارة طلباتي</button>
       </div>
@@ -171,9 +171,9 @@ export default function DeliveryHub() {
         <div className="space-y-6">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full h-16 rounded-[2rem] border-2 border-dashed border-primary/25 bg-primary/5 text-primary font-black gap-3 shadow-hard-sm hover:bg-primary/10 interactive-lift">إنشاء طلب توصيل جديد <Plus size={20} /></Button>
+              <Button variant="cta" className="h-16 w-full gap-3 rounded-[2rem] border-2 border-dashed border-primary/25 font-black">إنشاء طلب توصيل جديد <Plus size={20} /></Button>
             </DialogTrigger>
-            <DialogContent className="bg-card border-border text-foreground text-right font-sans shadow-hard" dir="rtl">
+            <DialogContent className="border-navy/20 bg-card text-right font-sans text-foreground shadow-hard" dir="rtl">
               <DialogHeader><DialogTitle className="text-primary font-black text-xl">تفاصيل طلب التوصيل</DialogTitle></DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-1">
@@ -205,7 +205,7 @@ export default function DeliveryHub() {
           </Dialog>
 
           {orders?.filter(o => o.buyer_id === user?.id).map(order => (
-            <Card key={order.id} className="p-6 rounded-[2.5rem] bg-card border border-border relative overflow-hidden shadow-hard interactive-lift">
+            <Card key={order.id} className="relative overflow-hidden rounded-[2.5rem] border border-navy/20 bg-card p-6 shadow-hard interactive-lift">
               <div className="flex justify-between items-center mb-4">
                 <Badge className={`${order.status === 'active' ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary border border-primary/30'} uppercase text-[9px] font-black px-4`}>
                   {order.status === 'pending' ? "في انتظار موصل ⏳" : order.status === 'active' ? "جاري التوصيل 🚚" : "تم بنجاح ✅"}
@@ -234,7 +234,7 @@ export default function DeliveryHub() {
         <div className="space-y-6">
           {/* إحصائيات الموصل - Gamification */}
           <div className="grid grid-cols-2 gap-4">
-            <Card className="p-4 bg-card/20 border border-border/20 flex items-center gap-3 relative overflow-hidden group">
+            <Card className="group relative flex items-center gap-3 overflow-hidden border border-navy/20 bg-card/20 p-4">
               <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary z-10">
                 <Award size={20} />
@@ -244,7 +244,7 @@ export default function DeliveryHub() {
                 <p className="text-xl font-black text-foreground">{completedMissions}</p>
               </div>
             </Card>
-            <Card className="p-4 bg-card border border-border flex items-center gap-3 relative overflow-hidden group shadow-hard-sm">
+            <Card className="group relative flex items-center gap-3 overflow-hidden border border-navy/20 bg-card p-4 shadow-hard-sm">
               <div className="absolute inset-0 bg-success/5 group-hover:bg-success/10 transition-colors"></div>
               <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center text-success z-10">
                 <TrendingUp size={20} />
@@ -257,7 +257,7 @@ export default function DeliveryHub() {
           </div>
 
           {orders?.filter(o => (o.status === 'pending' || (o.status === 'active' && o.runner_id === user?.id))).map(order => (
-            <Card key={order.id} className={`p-8 rounded-[3rem] bg-card border transition-all duration-500 shadow-hard ${order.status === 'active' ? 'border-primary/40 scale-[1.02]' : 'border-border'}`}>
+            <Card key={order.id} className={`rounded-[3rem] border bg-card p-8 shadow-hard transition-all duration-500 ${order.status === 'active' ? 'scale-[1.02] border-primary/40' : 'border-navy/20'}`}>
               <div className="flex justify-between items-start mb-6">
                 <Badge className={order.location.includes('[خارجي]') ? 'bg-primary/10 text-primary border border-primary/30 font-black' : 'bg-primary/10 text-primary border border-primary/30 font-black'}>
                    {order.location.includes('[خارجي]') ? 'خارج الحرم الجامعي' : 'داخل الحرم الجامعي'}
@@ -268,7 +268,7 @@ export default function DeliveryHub() {
                  </div>
               </div>
 
-              <div className="bg-muted/20 p-6 rounded-[2.5rem] border border-border mb-6 text-right font-bold text-[11px] relative">
+              <div className="relative mb-6 rounded-[2.5rem] border border-navy/20 bg-muted/20 p-6 text-right text-[11px] font-bold">
                 <p className="font-black text-xl mb-4 flex items-center gap-2 flex-row-reverse"><Package className="text-primary" size={24}/> {order.title}</p>
                  <div className="space-y-2 mr-2">
                   <div className="flex items-center gap-2 flex-row-reverse text-muted-foreground font-black tracking-tight"><MapPin size={12}/> {order.location.split(' -> ')[0].replace(/\[.*?\]/, '')}</div>
@@ -296,7 +296,7 @@ export default function DeliveryHub() {
                 {order.status === 'active' && order.runner_id === user?.id && (
                   <div className="space-y-4">
                     <div className="flex gap-3">
-                      <Button onClick={() => window.open(`https://wa.me/2${order.phone_number}`, '_blank')} className="flex-1 h-14 rounded-2xl font-black flex items-center justify-center gap-2 shadow-hard-sm interactive-lift">
+                      <Button aria-label={`التواصل عبر واتساب بشأن ${order.title}`} onClick={() => window.open(`https://wa.me/2${order.phone_number}`, '_blank')} className="flex-1 h-14 rounded-2xl font-black flex items-center justify-center gap-2 shadow-hard-sm interactive-lift">
                         <MessageSquare size={18} /> واتساب
                       </Button>
                       <Button onClick={() => navigate(`/chat?uid=${order.buyer_id}`)} className="flex-1 h-14 rounded-2xl font-black flex items-center justify-center gap-2 shadow-hard-sm interactive-lift">
@@ -304,7 +304,7 @@ export default function DeliveryHub() {
                       </Button>
                     </div>
                     
-                    <div className="p-6 bg-muted/30 rounded-[2.5rem] border border-border space-y-4">
+                    <div className="space-y-4 rounded-[2.5rem] border border-navy/20 bg-muted/30 p-6">
                       <div className="text-center">
                          <p className="text-[10px] text-muted-foreground font-black mb-2">عند استلام المبلغ من العميل، أدخل كود الأمان:</p>
                          <Input 

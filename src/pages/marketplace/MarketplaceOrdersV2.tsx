@@ -304,11 +304,11 @@ export default function MarketplaceOrdersV2() {
           <p className="text-sm text-muted-foreground">متابعة حالة الطلبات كمشتري وبائع من مكان واحد.</p>
         </div>
         <Link to="/marketplace">
-          <Button variant="outline" className="interactive-lift">الرجوع إلى السوق</Button>
+          <Button variant="outline" className="interactive-lift border-navy/30">الرجوع إلى السوق</Button>
         </Link>
       </div>
 
-      <Card className="border-border/80 shadow-hard rounded-2xl">
+      <Card className="border-navy/20 shadow-hard rounded-2xl">
         <CardContent className="grid gap-3 p-4 md:grid-cols-3">
           <Input
             placeholder="بحث برقم الطلب أو اسم المنتج"
@@ -317,7 +317,7 @@ export default function MarketplaceOrdersV2() {
             className="focus-halo"
           />
           <select
-            className="h-11 rounded-xl border border-input bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-11 rounded-xl border border-input bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value as "all" | MarketOrderStatus)}
           >
@@ -331,7 +331,7 @@ export default function MarketplaceOrdersV2() {
             <option value="refunded">{STATUS_LABELS.refunded}</option>
           </select>
           <select
-            className="h-11 rounded-xl border border-input bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-11 rounded-xl border border-input bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold"
             value={paymentFilter}
             onChange={(event) => setPaymentFilter(event.target.value as "all" | MarketPaymentMethod)}
           >
@@ -352,7 +352,7 @@ export default function MarketplaceOrdersV2() {
       )}
 
       <Tabs defaultValue="buyer" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:w-[360px] bg-card border border-border shadow-hard-sm rounded-xl p-1">
+        <TabsList className="grid w-full grid-cols-2 md:w-[360px] bg-card border border-navy/20 shadow-hard-sm rounded-xl p-1">
           <TabsTrigger value="buyer" className="gap-2">
             <User className="h-4 w-4" /> كمشتري
           </TabsTrigger>

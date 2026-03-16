@@ -172,7 +172,7 @@ export default function Chat() {
   return (
     <div className="h-[calc(100vh-100px)] grid grid-cols-1 md:grid-cols-3 gap-6 p-4 font-sans text-foreground" dir="rtl">
       {/* قائمة المحادثات */}
-      <Card className="md:col-span-1 bg-card border-border overflow-hidden flex flex-col rounded-[2rem] shadow-hard">
+      <Card className="md:col-span-1 flex flex-col overflow-hidden rounded-[2rem] border-navy/20 bg-card shadow-hard">
         <div className="p-6 border-b border-border bg-muted/30">
           <h2 className="text-foreground font-black flex items-center gap-2 text-xl"><MessageSquare className="text-primary" /> المحادثات</h2>
         </div>
@@ -190,7 +190,7 @@ export default function Chat() {
                 <div
                   key={contact.id}
                   onClick={() => setSelectedUserId(contact.id)}
-                  className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all interactive-lift ${selectedUserId === contact.id ? 'bg-primary/10 border border-primary/30 shadow-hard-sm' : 'hover:bg-muted/40 border border-transparent'}`}
+                  className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-all interactive-lift ${selectedUserId === contact.id ? 'border-primary/30 bg-primary/10 shadow-hard-sm' : 'border-transparent hover:bg-muted/40'}`}
                 >
                   <Avatar className="h-12 w-12 border border-border">
                     <AvatarImage src={contact.avatar_url || ''} />
@@ -208,7 +208,7 @@ export default function Chat() {
       </Card>
 
       {/* منطقة الشات */}
-      <Card className="md:col-span-2 bg-card border-border flex flex-col overflow-hidden relative rounded-[2rem] shadow-hard">
+      <Card className="relative md:col-span-2 flex flex-col overflow-hidden rounded-[2rem] border-navy/20 bg-card shadow-hard">
         {!selectedUserId ? (
           <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground opacity-70">
             <MessageSquare size={80} className="mb-6 text-primary/50" />
@@ -258,7 +258,7 @@ export default function Chat() {
                 placeholder="اكتب رسالتك هنا..."
                 className="bg-card border-border text-right h-12 rounded-xl focus-halo"
               />
-              <Button onClick={handleSend} size="icon" className="h-12 w-12 rounded-xl shadow-hard-sm interactive-lift">
+              <Button onClick={handleSend} size="icon" variant="cta" className="h-12 w-12 rounded-xl">
                 {sendMessage.isPending ? <Loader2 className="animate-spin" /> : <Send size={20} />}
               </Button>
             </div>
