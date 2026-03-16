@@ -139,31 +139,49 @@ export type Database = {
         Row: {
           buyer_id: string
           created_at: string
+          description: string | null
+          fee: number | null
           id: string
           location: string | null
+          otp_code: string | null
+          phone_number: string | null
           product_id: string | null
           runner_id: string | null
           status: Database["public"]["Enums"]["order_status"]
+          title: string | null
+          type: string | null
           updated_at: string
         }
         Insert: {
           buyer_id: string
           created_at?: string
+          description?: string | null
+          fee?: number | null
           id?: string
           location?: string | null
+          otp_code?: string | null
+          phone_number?: string | null
           product_id?: string | null
           runner_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          title?: string | null
+          type?: string | null
           updated_at?: string
         }
         Update: {
           buyer_id?: string
           created_at?: string
+          description?: string | null
+          fee?: number | null
           id?: string
           location?: string | null
+          otp_code?: string | null
+          phone_number?: string | null
           product_id?: string | null
           runner_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          title?: string | null
+          type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -189,6 +207,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketplace_ads: {
+        Row: {
+          budget: number
+          created_at: string
+          end_at: string
+          id: string
+          product_id: string | null
+          start_at: string
+          vendor_id: string
+        }
+        Insert: {
+          budget: number
+          created_at?: string
+          end_at: string
+          id?: string
+          product_id?: string | null
+          start_at: string
+          vendor_id: string
+        }
+        Update: {
+          budget?: number
+          created_at?: string
+          end_at?: string
+          id?: string
+          product_id?: string | null
+          start_at?: string
+          vendor_id?: string
+        }
+        Relationships: []
+      }
+      product_views: {
+        Row: {
+          id: string
+          product_id: string
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
       }
       market_addresses: {
         Row: {
@@ -602,6 +713,7 @@ export type Database = {
           id: string
           role: Database["public"]["Enums"]["app_role"]
           university_id: string | null
+          university_card_url: string | null
           updated_at: string
           verified_status: boolean
           wallet: number
@@ -614,6 +726,7 @@ export type Database = {
           id: string
           role?: Database["public"]["Enums"]["app_role"]
           university_id?: string | null
+          university_card_url?: string | null
           updated_at?: string
           verified_status?: boolean
           wallet?: number
@@ -626,9 +739,91 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           university_id?: string | null
+          university_card_url?: string | null
           updated_at?: string
           verified_status?: boolean
           wallet?: number
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number | null
+          reviewer_id: string | null
+          target_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          reviewer_id?: string | null
+          target_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          reviewer_id?: string | null
+          target_id?: string
+        }
+        Relationships: []
+      }
+      sports_hub: {
+        Row: {
+          contact_phone: string | null
+          created_at: string
+          current_players: number
+          event_date: string
+          event_time: string
+          gender_preference: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          joined_users: string[] | null
+          location: string
+          max_players: number
+          price_per_person: number
+          skill_level: string
+          sport_type: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          contact_phone?: string | null
+          created_at?: string
+          current_players?: number
+          event_date: string
+          event_time: string
+          gender_preference?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          joined_users?: string[] | null
+          location: string
+          max_players: number
+          price_per_person: number
+          skill_level: string
+          sport_type: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          contact_phone?: string | null
+          created_at?: string
+          current_players?: number
+          event_date?: string
+          event_time?: string
+          gender_preference?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          joined_users?: string[] | null
+          location?: string
+          max_players?: number
+          price_per_person?: number
+          skill_level?: string
+          sport_type?: string
+          title?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -637,11 +832,50 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_market_cart_item_secure: {
+        Args: {
+          _product_id: string
+          _quantity?: number
+        }
+        Returns: number
+      }
       admin_manage_market_product: {
         Args: {
           _action?: string | null
           _product_id?: string | null
           _reason?: string | null
+        }
+        Returns: string
+      }
+      calculate_commission: {
+        Args: {
+          _order_total: number
+          _vendor_id: string
+        }
+        Returns: number
+      }
+      claim_delivery_order_secure: {
+        Args: {
+          _order_id: string
+        }
+        Returns: string
+      }
+      complete_delivery_order_secure: {
+        Args: {
+          _order_id: string
+          _otp: string
+        }
+        Returns: string
+      }
+      create_delivery_order_secure: {
+        Args: {
+          _campus: string
+          _dropoff: string
+          _fee: number
+          _phone: string
+          _pickup: string
+          _title: string
+          _type?: string
         }
         Returns: string
       }
@@ -652,12 +886,47 @@ export type Database = {
         }
         Returns: number
       }
+      create_market_product_listing_secure: {
+        Args: {
+          _category?: Database["public"]["Enums"]["product_category"]
+          _description?: string
+          _image_urls?: string[]
+          _is_negotiable?: boolean
+          _phone?: string | null
+          _price?: number
+          _product_condition?: string
+          _stock_qty?: number
+          _title: string
+        }
+        Returns: string
+      }
       create_market_checkout_order: {
         Args: {
           _payment_method?: string
           _product_id: string
         }
         Returns: string
+      }
+      create_vendor: {
+        Args: {
+          _campus_id?: string | null
+          _logo_url?: string | null
+          _shop_name: string
+          _type: string
+          _user_id: string
+        }
+        Returns: string
+      }
+      get_dashboard_summary: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          notification_count: number
+          order_count: number
+          product_count: number
+          profile: Json
+        }[]
       }
       get_market_checkout_breakdown: {
         Args: {
@@ -669,6 +938,30 @@ export type Database = {
           service_fee: number
           subtotal: number
           total: number
+        }[]
+      }
+      get_vendor_by_user: {
+        Args: {
+          _user_id: string
+        }
+        Returns: {
+          campus_id: string | null
+          id: string
+          logo_url: string | null
+          shop_name: string
+          subscription_status: string | null
+          type: string
+          verified: boolean
+        }[]
+      }
+      get_vendor_settings: {
+        Args: {
+          _vendor_id: string
+        }
+        Returns: {
+          commission_rate: number
+          currency: string
+          shipping_fee: number
         }[]
       }
       has_role: {
@@ -698,6 +991,12 @@ export type Database = {
         }
         Returns: string
       }
+      release_delivery_order_secure: {
+        Args: {
+          _order_id: string
+        }
+        Returns: string
+      }
       review_market_manual_payment_receipt: {
         Args: {
           _admin_note?: string | null
@@ -705,6 +1004,14 @@ export type Database = {
           _order_id: string
         }
         Returns: "pending" | "approved" | "rejected"
+      }
+      review_market_payout_request: {
+        Args: {
+          _admin_note?: string | null
+          _approve: boolean
+          _payout_id: string
+        }
+        Returns: string
       }
       review_market_seller_upgrade_request: {
         Args: {

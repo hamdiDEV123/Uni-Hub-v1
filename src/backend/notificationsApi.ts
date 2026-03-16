@@ -53,7 +53,7 @@ export async function markAllNotificationsAsRead(userId: string): Promise<void> 
 export function subscribeToMyNotifications(
   userId: string,
   onInsert: () => void
-): () => Promise<"ok" | "timed out" | "error"> {
+): () => void {
   const channel = supabase
     .channel(`notifications-${userId}`)
     .on(
@@ -68,6 +68,8 @@ export function subscribeToMyNotifications(
     )
     .subscribe();
 
-  return () => supabase.removeChannel(channel);
+  return () => {
+    void supabase.removeChannel(channel);
+  };
 }
 
