@@ -84,7 +84,7 @@ describe("marketplaceApi functions", () => {
 
     const id = await marketplace.createMarketProductListingSecure(input);
     expect(id).toBe("uuid-product");
-    expect(mock).toHaveBeenCalledWith("create_market_product_listing_secure", {
+    expect(mock).toHaveBeenCalledWith("create_market_product_listing_v3_secure", {
       _title: "Test",
       _description: "",
       _category: "Tech",
@@ -94,6 +94,10 @@ describe("marketplaceApi functions", () => {
       _phone: null,
       _image_urls: [],
       _is_negotiable: false,
+      _listing_mode: "sale",
+      _rental_price_per_day: null,
+      _barter_for: null,
+      _service_delivery_days: null,
     });
   });
 

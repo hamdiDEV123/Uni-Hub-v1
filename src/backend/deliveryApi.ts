@@ -1,14 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export async function createDeliveryOrderSecure(input: {
+export type DeliveryMode = "external" | "campus_run";
+
+export interface CreateDeliveryOrderInput {
   title: string;
   campus: string;
   pickup: string;
   dropoff: string;
   fee: number;
   phone: string;
-  type?: string;
-}): Promise<string> {
+  type?: DeliveryMode;
+}
+
+export async function createDeliveryOrderSecure(input: CreateDeliveryOrderInput): Promise<string> {
   const { data, error } = await supabase.rpc("create_delivery_order_secure", {
     _title: input.title,
     _campus: input.campus,

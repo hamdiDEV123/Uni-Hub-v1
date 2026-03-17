@@ -28,12 +28,16 @@ export interface CreateMarketProductListingInput {
   title: string;
   description?: string;
   category: "Medical" | "Engineering" | "Tech" | "Scrap";
+  listingMode?: "sale" | "rental" | "barter" | "service";
   price: number;
   stockQty: number;
   productCondition?: string;
   phone?: string;
   imageUrls: string[];
   isNegotiable?: boolean;
+  rentalPricePerDay?: number;
+  barterFor?: string;
+  serviceDeliveryDays?: number;
 }
 
 export async function addMarketCartItemSecure(
@@ -176,7 +180,7 @@ export async function createMarketplaceAd(
 export async function createMarketProductListingSecure(
   input: CreateMarketProductListingInput
 ): Promise<string> {
-  const { data, error } = await supabase.rpc("create_market_product_listing_secure", {
+  const { data, error } = await supabase.rpc("create_market_product_listing_v3_secure", {
     _title: input.title,
     _description: input.description ?? "",
     _category: input.category,
@@ -186,6 +190,10 @@ export async function createMarketProductListingSecure(
     _phone: input.phone ?? null,
     _image_urls: input.imageUrls,
     _is_negotiable: input.isNegotiable ?? false,
+    _listing_mode: input.listingMode ?? "sale",
+    _rental_price_per_day: input.rentalPricePerDay ?? null,
+    _barter_for: input.barterFor ?? null,
+    _service_delivery_days: input.serviceDeliveryDays ?? null,
   });
 
   if (error) throw error;

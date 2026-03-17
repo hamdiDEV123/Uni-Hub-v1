@@ -13,13 +13,14 @@ import { callRpc } from "@/backend/rpc";
 import { getReleaseFlags } from "@/lib/releaseFlags";
 
 const Index = lazy(() => import("./pages/Index"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+const DashboardHome = lazy(() => import("./pages/DashboardHome"));
+const CampusFeed = lazy(() => import("./pages/CampusFeed"));
 const Delivery = lazy(() => import("./pages/Delivery"));
 const Housing = lazy(() => import("./pages/Housing"));
 const Sports = lazy(() => import("./pages/Sports"));
 const StudyHub = lazy(() => import("./pages/Study Hub"));
 const Notifications = lazy(() => import("./pages/Notifications"));
-const Profile = lazy(() => import("./pages/Profile"));
+const Profile = lazy(() => import("./pages/ProfileV2"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Chat = lazy(() => import("./pages/chat"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -30,6 +31,7 @@ const MarketplaceOrders = lazy(() => import("./pages/marketplace/MarketplaceOrde
 const AdminHome = lazy(() => import("./pages/admin/AdminHome"));
 const AdminMarketplaceConsole = lazy(() => import("./pages/admin/AdminMarketplaceConsoleV2"));
 const AdminStudyHubConsole = lazy(() => import("./pages/admin/AdminStudyHubConsole"));
+const AdminCampusFeedConsole = lazy(() => import("./pages/admin/AdminCampusFeedConsole"));
 const AdminLegacy = lazy(() => import("./pages/Admin"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 
@@ -90,7 +92,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+              <Route path="/campus-feed" element={<ProtectedRoute><CampusFeed /></ProtectedRoute>} />
               <Route
                 path="/marketplace"
                 element={
@@ -175,6 +178,16 @@ const App = () => (
                   <AdminRoute>
                     <RouteErrorBoundary routeName="لوحة إدارة بنك المحاضرات">
                       <AdminStudyHubConsole />
+                    </RouteErrorBoundary>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/campus-feed"
+                element={
+                  <AdminRoute>
+                    <RouteErrorBoundary routeName="لوحة إدارة مجتمع الجامعة">
+                      <AdminCampusFeedConsole />
                     </RouteErrorBoundary>
                   </AdminRoute>
                 }

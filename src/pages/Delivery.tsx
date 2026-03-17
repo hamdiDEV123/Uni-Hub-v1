@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth';
 import { useNavigate } from 'react-router-dom';
 import { 
   Package, MapPin, CheckCircle2, Plus, 
-  Search, ShoppingBag, MessageSquare, ShieldCheck, Lock, Star, Award, TrendingUp
+  Search, ShoppingBag, MessageSquare, ShieldCheck, Lock, Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -20,6 +20,14 @@ import {
   createDeliveryOrderSecure,
   releaseDeliveryOrderSecure,
 } from "@/backend/deliveryApi";
+import { DELIVERY_MODE_LABELS, DELIVERY_MODE_SHORT_LABELS, DELIVERY_UNIVERSITIES } from "./delivery/delivery.constants";
+import { DeliveryRunnerStats } from "./delivery/components/DeliveryRunnerStats";
+import {
+  DEFAULT_DELIVERY_DRAFT,
+  normalizeDeliveryMode,
+  type DeliveryDraftOrder,
+  type DeliveryMode,
+} from "./delivery/delivery.types";
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 type OrderRow = Database['public']['Tables']['orders']['Row'];
@@ -33,9 +41,8 @@ export default function DeliveryHub() {
   const [enteredOtp, setEnteredOtp] = useState<string>(""); 
   const [rating, setRating] = useState(0); // تقييم الطلب
 
-  const universities = ["جامعة الدلتا", "جامعة المنصورة", "القاهرة", "الاسكندرية", "جامعة عين شمس", "جامعة الأزهر", "أخرى"];
   const [selectedUni, setSelectedUni] = useState("القاهرة");
-  const [newOrder, setNewOrder] = useState({ title: '', pickup: '', dropoff: '', fee: '', type: 'external', phone: '' });
+  const [newOrder, setNewOrder] = useState<DeliveryDraftOrder>(DEFAULT_DELIVERY_DRAFT);
 
   // 1. جلب بيانات المستخدم الحالية من الواجهة الخلفية (ملف شخصي، رصيد)
   const { data: profile } = useQuery({
@@ -82,7 +89,7 @@ export default function DeliveryHub() {
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       toast.success('تم إنشاء الطلب بنجاح! سيتم إعلامك قريبًا');
       setIsDialogOpen(false);
-      setNewOrder({ title: '', pickup: '', dropoff: '', fee: '', type: 'external', phone: '' });
+      setNewOrder(DEFAULT_DELIVERY_DRAFT);
     },
     onError: (err: unknown) => {
       toast.error(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء الطلب");
@@ -150,7 +157,7 @@ export default function DeliveryHub() {
 
       {/* فلتر الجامعات */}
       <div className="mb-4 flex flex-row-reverse gap-2 overflow-x-auto pb-4 no-scrollbar">
-        {universities.map((uni) => (
+        {DELIVERY_UNIVERSITIES.map((uni) => (
           <button key={uni} onClick={() => setSelectedUni(uni)}
             className={`whitespace-nowrap rounded-xl border px-5 py-2 text-[10px] font-black transition-all duration-300 ${
               selectedUni === uni ? 'border-primary bg-primary text-primary-foreground shadow-hard-sm' : 'border-navy/20 bg-card text-muted-foreground'
@@ -195,6 +202,22 @@ export default function DeliveryHub() {
                  <Input placeholder="رقم الهاتف" value={newOrder.phone} onChange={(e) => setNewOrder({...newOrder, phone: e.target.value})} className="bg-muted/30 border-border h-12 rounded-xl" />
                 </div>
                 <div className="space-y-1">
+                 <label className="text-[10px] text-muted-foreground mr-2 font-bold">نوع المهمة</label>
+                 <div className="grid grid-cols-2 gap-2">
+                    {(Object.keys(DELIVERY_MODE_LABELS) as DeliveryMode[]).map((mode) => (
+                      <Button
+                        key={mode}
+                        type="button"
+                        variant={newOrder.type === mode ? "default" : "outline"}
+                        className="h-11 text-[11px] font-black"
+                        onClick={() => setNewOrder((current) => ({ ...current, type: mode }))}
+                      >
+                        {DELIVERY_MODE_SHORT_LABELS[mode]}
+                      </Button>
+                    ))}
+                 </div>
+                </div>
+                <div className="space-y-1">
                  <label className="text-[10px] text-primary mr-2 font-black uppercase">عمولة التوصيل (ج.م)</label>
                  <Input type="number" placeholder="كم ستدفع للموصل؟" value={newOrder.fee} onChange={(e) => setNewOrder({...newOrder, fee: e.target.value})} className="bg-primary/5 border-primary/20 h-14 rounded-xl text-center text-lg font-black" />
                 </div>
@@ -233,34 +256,13 @@ export default function DeliveryHub() {
       {viewMode === 'runner' && (
         <div className="space-y-6">
           {/* إحصائيات الموصل - Gamification */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="group relative flex items-center gap-3 overflow-hidden border border-navy/20 bg-card/20 p-4">
-              <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary z-10">
-                <Award size={20} />
-              </div>
-              <div className="z-10">
-                <p className="text-[9px] text-muted-foreground font-bold">المهام المكتملة</p>
-                <p className="text-xl font-black text-foreground">{completedMissions}</p>
-              </div>
-            </Card>
-            <Card className="group relative flex items-center gap-3 overflow-hidden border border-navy/20 bg-card p-4 shadow-hard-sm">
-              <div className="absolute inset-0 bg-success/5 group-hover:bg-success/10 transition-colors"></div>
-              <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center text-success z-10">
-                <TrendingUp size={20} />
-              </div>
-              <div className="z-10">
-                <p className="text-[9px] text-muted-foreground font-bold">إجمالي الأرباح</p>
-                <p className="text-xl font-black text-foreground">{totalEarnings} <span className="text-[10px] text-muted-foreground">ج.م</span></p>
-              </div>
-            </Card>
-          </div>
+          <DeliveryRunnerStats completedMissions={completedMissions} totalEarnings={totalEarnings} />
 
           {orders?.filter(o => (o.status === 'pending' || (o.status === 'active' && o.runner_id === user?.id))).map(order => (
             <Card key={order.id} className={`rounded-[3rem] border bg-card p-8 shadow-hard transition-all duration-500 ${order.status === 'active' ? 'scale-[1.02] border-primary/40' : 'border-navy/20'}`}>
               <div className="flex justify-between items-start mb-6">
-                <Badge className={order.location.includes('[خارجي]') ? 'bg-primary/10 text-primary border border-primary/30 font-black' : 'bg-primary/10 text-primary border border-primary/30 font-black'}>
-                   {order.location.includes('[خارجي]') ? 'خارج الحرم الجامعي' : 'داخل الحرم الجامعي'}
+                 <Badge className={normalizeDeliveryMode(order.type) === 'external' ? 'bg-primary/10 text-primary border border-primary/30 font-black' : 'bg-primary/10 text-primary border border-primary/30 font-black'}>
+                   {DELIVERY_MODE_LABELS[normalizeDeliveryMode(order.type)]}
                  </Badge>
                  <div className="text-right">
                   <span className="text-[10px] text-muted-foreground font-black block">عمولة التوصيل</span>

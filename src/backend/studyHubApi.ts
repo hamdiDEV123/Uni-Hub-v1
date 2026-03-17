@@ -17,6 +17,12 @@ export interface StudyMaterialWithMeta extends StudyMaterialRow {
   user_vote: -1 | 0 | 1;
   is_favorite: boolean;
   viewed_at: string | null;
+  owner_profile: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    university: string | null;
+  } | null;
 }
 
 export interface StudyMaterialFilters {
@@ -191,6 +197,32 @@ export async function fetchStudyMaterials(
   if (error) throw error;
 
   const rows = (data ?? []) as StudyMaterialRow[];
+  const ownerIds = Array.from(new Set(rows.map((row) => row.owner_id).filter(Boolean)));
+  let ownerProfileById = new Map<
+    string,
+    { id: string; full_name: string | null; avatar_url: string | null; university: string | null }
+  >();
+
+  if (ownerIds.length > 0) {
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id,full_name,avatar_url,university")
+      .in("id", ownerIds);
+
+    if (profilesError) throw profilesError;
+
+    ownerProfileById = new Map(
+      (profiles ?? []).map((profile) => [
+        profile.id,
+        {
+          id: profile.id,
+          full_name: profile.full_name,
+          avatar_url: profile.avatar_url,
+          university: profile.university,
+        },
+      ])
+    );
+  }
 
   const votesByMaterialId = new Map<string, -1 | 0 | 1>();
   const favoriteIds = new Set<string>();
@@ -243,6 +275,7 @@ export async function fetchStudyMaterials(
       user_vote: votesByMaterialId.get(row.id) ?? 0,
       is_favorite: favoriteIds.has(row.id),
       viewed_at: viewedAtByMaterialId.get(row.id) ?? null,
+      owner_profile: ownerProfileById.get(row.owner_id) ?? null,
     }))
     .sort((left, right) => {
       const rightRank = computeHybridRank(right);

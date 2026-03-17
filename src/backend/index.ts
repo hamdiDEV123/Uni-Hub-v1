@@ -1,4 +1,5 @@
 export * from "./adminApi";
+export * from "./campusFeedApi";
 
 export * from "./contracts";
 export * from "./deliveryApi";

@@ -11,6 +11,7 @@ import {
   Shield,
   LogOut,
   User,
+  MessagesSquare,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
@@ -29,6 +30,7 @@ import {
 
 const mainNav = [
   { title: "\u0644\u0648\u062d\u0629 \u0627\u0644\u062a\u062d\u0643\u0645", url: "/dashboard", icon: LayoutDashboard },
+  { title: "\u0645\u062c\u062a\u0645\u0639 \u0627\u0644\u062c\u0627\u0645\u0639\u0629", url: "/campus-feed", icon: MessagesSquare },
   { title: "\u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062e\u0635\u064a", url: "/profile", icon: User },
   { title: "\u0627\u0644\u0633\u0648\u0642", url: "/marketplace", icon: ShoppingBag },
   { title: "\u0627\u0644\u062a\u0648\u0635\u064a\u0644", url: "/delivery", icon: Truck },

@@ -6,12 +6,16 @@ import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/lib/auth';
 import { MapPin, Plus, MessageCircle, Camera, X, Loader2, Wifi, Wind, Shirt, Utensils, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { HOUSING_AMENITIES, ROOMMATE_SLEEP_OPTIONS, ROOMMATE_SMOKING_OPTIONS } from './housing/housing.constants';
+import { cleanDescription, extractAmenities, extractImageUrls, extractPhoneNumber, normalizeAmenityLabel } from './housing/housing.utils';
+import { DEFAULT_ROOMMATE_FORM, type RoommateRequest } from './housing/roommate.types';
 
 type HousingRow = Database['public']['Tables']['housing']['Row'];
 type HousingInsert = Database['public']['Tables']['housing']['Insert'];
@@ -23,64 +27,26 @@ type HousingRowCompat = HousingRow & {
   contact_phone?: string | null;
 };
 
-const amenitiesList = [
-  { id: 'wifi', label: 'واي فاي', icon: Wifi },
-  { id: 'ac', label: 'تكييف', icon: Wind },
-  { id: 'laundry', label: 'غسالة', icon: Shirt },
-  { id: 'kitchen', label: 'مطبخ مجهز', icon: Utensils },
-];
+const amenityIconMap = {
+  wifi: Wifi,
+  ac: Wind,
+  laundry: Shirt,
+  kitchen: Utensils,
+} as const;
 
 export default function Housing() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [activeSection, setActiveSection] = useState<'housing' | 'roommate'>('housing');
   const [genderFilter, setGenderFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [open, setOpen] = useState(false);
+  const [roommateOpen, setRoommateOpen] = useState(false);
+  const [roommateForm, setRoommateForm] = useState(DEFAULT_ROOMMATE_FORM);
   const [selectedHousing, setSelectedHousing] = useState<HousingRowCompat | null>(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-
-  const extractPhoneNumber = (text: string | null | undefined): string | null => {
-    if (!text) return null;
-    const match = text.match(/الهاتف:\s*([0-9+\-\s]+)/);
-    return match?.[1]?.trim() || null;
-  };
-
-  const extractImageUrls = (text: string | null | undefined): string[] => {
-    if (!text) return [];
-    const match = text.match(/الصور:\s*(.+)/);
-    if (!match?.[1]) return [];
-    return match[1]
-      .split(' | ')
-      .map((url) => url.trim())
-      .filter(Boolean);
-  };
-
-  const extractAmenities = (text: string | null | undefined): string[] => {
-    if (!text) return [];
-    const match = text.match(/المرافق:\s*(.+)/);
-    if (!match?.[1]) return [];
-    return match[1]
-      .split('،')
-      .map((item) => item.trim())
-      .filter(Boolean);
-  };
-
-  const cleanDescription = (text: string | null | undefined): string => {
-    if (!text) return '';
-    return text
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line && !line.startsWith('الهاتف:') && !line.startsWith('المرافق:') && !line.startsWith('الصور:'))
-      .join('\n')
-      .trim();
-  };
-
-  const normalizeAmenityLabel = (value: string): string => {
-    const mapped = amenitiesList.find((item) => item.id === value);
-    return mapped ? mapped.label : value;
-  };
 
   const getHousingImages = (housing: HousingRowCompat | null): string[] => {
     if (!housing) return [];
@@ -113,6 +79,18 @@ export default function Housing() {
       const { data, error } = await q.order('created_at', { ascending: false });
       if (error) throw error;
       return (data ?? []) as HousingRow[];
+    },
+  });
+
+  const { data: roommateRequests } = useQuery({
+    queryKey: ['roommate-requests'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('roommate_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as RoommateRequest[];
     },
   });
 
@@ -203,6 +181,39 @@ export default function Housing() {
     },
   });
 
+  const addRoommateRequest = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('المستخدم غير موجود');
+      if (!roommateForm.title.trim()) throw new Error('عنوان الطلب مطلوب');
+
+      const payload = {
+        user_id: user.id,
+        title: roommateForm.title.trim(),
+        description: roommateForm.description.trim() || null,
+        preferred_gender: roommateForm.preferred_gender,
+        preferred_faculty: roommateForm.preferred_faculty.trim() || null,
+        sleep_schedule: roommateForm.sleep_schedule,
+        smoking_preference: roommateForm.smoking_preference,
+        budget_min: roommateForm.budget_min ? Number(roommateForm.budget_min) : null,
+        budget_max: roommateForm.budget_max ? Number(roommateForm.budget_max) : null,
+        area: roommateForm.area.trim() || null,
+        phone: roommateForm.phone.trim() || null,
+      };
+
+      const { error } = await supabase.from('roommate_requests').insert([payload]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roommate-requests'] });
+      setRoommateOpen(false);
+      setRoommateForm(DEFAULT_ROOMMATE_FORM);
+      toast.success('تم نشر طلب شريك السكن');
+    },
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 p-4 bg-transparent min-h-screen text-foreground font-sans" dir="rtl">
       <div className="flex items-center justify-between rounded-3xl border border-navy/20 bg-card p-5 shadow-hard font-sans">
@@ -257,13 +268,16 @@ export default function Housing() {
               <div className="space-y-2 text-right font-sans">
                 <Label className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest px-1">المرافق</Label>
                 <div className="grid grid-cols-2 gap-2 font-sans">
-                  {amenitiesList.map((am) => (
+                  {HOUSING_AMENITIES.map((am) => {
+                    const AmenityIcon = amenityIconMap[am.id];
+                    return (
                     <div key={am.id} onClick={() => setForm((p) => ({ ...p, amenities: p.amenities.includes(am.id) ? p.amenities.filter((a) => a !== am.id) : [...p.amenities, am.id] }))}
                       className={`flex cursor-pointer items-center justify-between rounded-2xl border p-3 transition-all ${form.amenities.includes(am.id) ? 'border-primary/40 bg-primary/10 text-primary' : 'border-navy/20 bg-muted/30 text-muted-foreground'}`}>
-                      <am.icon size={18} />
+                      <AmenityIcon size={18} />
                       <span className="text-xs font-black">{am.label}</span>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -279,6 +293,76 @@ export default function Housing() {
         </Dialog>
       </div>
 
+      <div className="flex items-center gap-3">
+        <Button
+          variant={activeSection === 'housing' ? 'default' : 'outline'}
+          className="h-11 rounded-2xl font-black"
+          onClick={() => setActiveSection('housing')}
+        >
+          إعلانات السكن
+        </Button>
+        <Button
+          variant={activeSection === 'roommate' ? 'default' : 'outline'}
+          className="h-11 rounded-2xl font-black"
+          onClick={() => setActiveSection('roommate')}
+        >
+          Roommate Matcher
+        </Button>
+        {activeSection === 'roommate' ? (
+          <Dialog open={roommateOpen} onOpenChange={setRoommateOpen}>
+            <DialogTrigger asChild>
+              <Button variant="cta" className="mr-auto h-11 rounded-2xl font-black">
+                <Plus className="ml-2 h-4 w-4" />
+                أضف طلب روم ميت
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto rounded-[2rem] border-navy/20 bg-card" dir="rtl">
+              <DialogHeader>
+                <DialogTitle className="text-right text-primary">طلب شريك سكن</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <Input placeholder="عنوان الطلب" value={roommateForm.title} onChange={(e) => setRoommateForm((p) => ({ ...p, title: e.target.value }))} />
+                <Input placeholder="الكلية المفضلة" value={roommateForm.preferred_faculty} onChange={(e) => setRoommateForm((p) => ({ ...p, preferred_faculty: e.target.value }))} />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input type="number" placeholder="أقل ميزانية" value={roommateForm.budget_min} onChange={(e) => setRoommateForm((p) => ({ ...p, budget_min: e.target.value }))} />
+                  <Input type="number" placeholder="أعلى ميزانية" value={roommateForm.budget_max} onChange={(e) => setRoommateForm((p) => ({ ...p, budget_max: e.target.value }))} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Select value={roommateForm.sleep_schedule} onValueChange={(value) => setRoommateForm((p) => ({ ...p, sleep_schedule: value as 'early' | 'late' | 'flexible' }))}>
+                    <SelectTrigger><SelectValue placeholder="مواعيد النوم" /></SelectTrigger>
+                    <SelectContent>
+                      {ROOMMATE_SLEEP_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={roommateForm.smoking_preference} onValueChange={(value) => setRoommateForm((p) => ({ ...p, smoking_preference: value as 'no' | 'yes' | 'either' }))}>
+                    <SelectTrigger><SelectValue placeholder="التدخين" /></SelectTrigger>
+                    <SelectContent>
+                      {ROOMMATE_SMOKING_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Input placeholder="المنطقة" value={roommateForm.area} onChange={(e) => setRoommateForm((p) => ({ ...p, area: e.target.value }))} />
+                <Input placeholder="رقم التواصل" value={roommateForm.phone} onChange={(e) => setRoommateForm((p) => ({ ...p, phone: e.target.value }))} />
+                <textarea
+                  placeholder="وصف تفضيلاتك"
+                  value={roommateForm.description}
+                  onChange={(e) => setRoommateForm((p) => ({ ...p, description: e.target.value }))}
+                  className="w-full min-h-24 rounded-xl border border-border p-3"
+                />
+                <Button className="w-full" onClick={() => addRoommateRequest.mutate()} disabled={addRoommateRequest.isPending}>
+                  نشر الطلب
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        ) : null}
+      </div>
+
+      {activeSection === 'housing' ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pt-6 font-sans">
         {listings?.map((h: HousingRowCompat) => (
           <motion.div key={h.id} layout onClick={() => { setSelectedHousing(h); setCurrentImgIndex(0); }} className="group cursor-pointer rounded-[3rem] border border-navy/20 bg-card p-4 shadow-hard transition-all interactive-lift">
@@ -298,6 +382,36 @@ export default function Housing() {
           </motion.div>
         ))}
       </div>
+      ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-6">
+        {(roommateRequests ?? []).map((request) => (
+          <Card key={request.id} className="rounded-3xl border border-navy/20 bg-card p-5 shadow-hard-sm text-right">
+            <h3 className="text-lg font-black text-foreground">{request.title}</h3>
+            <p className="text-xs text-muted-foreground mt-1">{request.preferred_faculty || 'كل الكليات'}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Badge variant="outline">{ROOMMATE_SLEEP_OPTIONS.find((item) => item.value === request.sleep_schedule)?.label ?? request.sleep_schedule}</Badge>
+              <Badge variant="outline">{ROOMMATE_SMOKING_OPTIONS.find((item) => item.value === request.smoking_preference)?.label ?? request.smoking_preference}</Badge>
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground whitespace-pre-line">{request.description || 'بدون وصف إضافي'}</p>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="text-xs font-bold text-primary">{request.budget_min ?? 0} - {request.budget_max ?? 0} ج.م</span>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!request.phone) {
+                    toast.error('رقم التواصل غير متاح');
+                    return;
+                  }
+                  window.open(`https://wa.me/20${request.phone}`, '_blank');
+                }}
+              >
+                تواصل
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+      )}
 
       <Dialog open={!!selectedHousing} onOpenChange={() => { setSelectedHousing(null); setCurrentImgIndex(0); }}>
         <DialogContent className="w-[95vw] max-w-3xl overflow-hidden rounded-[2rem] border-navy/20 bg-card p-0 text-foreground shadow-hard sm:rounded-[3rem]" dir="rtl">

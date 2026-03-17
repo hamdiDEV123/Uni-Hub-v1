@@ -23,6 +23,7 @@ type Profile = {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
+  university: string | null;
 };
 
 export default function Chat() {
@@ -67,8 +68,8 @@ export default function Chat() {
       if (ids.size === 0) return [];
 
       const { data: profiles } = await supabase
-        .from('profiles_public')
-        .select('id, full_name, avatar_url')
+        .from('profiles')
+        .select('id, full_name, avatar_url, university')
         .in('id', Array.from(ids));
       return (profiles as Profile[]) || [];
     },
@@ -169,6 +170,8 @@ export default function Chat() {
     }
   };
 
+  const selectedContact = contacts?.find((contact) => contact.id === selectedUserId) ?? null;
+
   return (
     <div className="h-[calc(100vh-100px)] grid grid-cols-1 md:grid-cols-3 gap-6 p-4 font-sans text-foreground" dir="rtl">
       {/* قائمة المحادثات */}
@@ -198,7 +201,7 @@ export default function Chat() {
                   </Avatar>
                   <div>
                     <p className="text-foreground font-black text-sm">{contact.full_name}</p>
-                    <p className="text-muted-foreground text-[10px] font-bold mt-1">اضغط للمراسلة</p>
+                    <p className="text-muted-foreground text-[10px] font-bold mt-1">{contact.university || 'جامعة غير محددة'}</p>
                   </div>
                 </div>
               ))
@@ -219,10 +222,12 @@ export default function Chat() {
             {/* Chat Header */}
             <div className="p-4 border-b border-border bg-muted/30 flex items-center gap-4">
               <Avatar className="h-10 w-10 border border-border">
-                <AvatarFallback className="bg-primary text-primary-foreground font-black">{contacts?.find(c => c.id === selectedUserId)?.full_name?.charAt(0)}</AvatarFallback>
+                <AvatarImage src={selectedContact?.avatar_url || ''} />
+                <AvatarFallback className="bg-primary text-primary-foreground font-black">{selectedContact?.full_name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
-                <span className="text-foreground font-black block text-lg">{contacts?.find(c => c.id === selectedUserId)?.full_name || 'مستخدم'}</span>
+                <span className="text-foreground font-black block text-lg">{selectedContact?.full_name || 'مستخدم'}</span>
+                <span className="text-[10px] text-muted-foreground font-bold block">{selectedContact?.university || 'جامعة غير محددة'}</span>
                 <span className="text-[10px] text-success font-bold flex items-center gap-1">● متصل الآن (تجريبي)</span>
               </div>
             </div>

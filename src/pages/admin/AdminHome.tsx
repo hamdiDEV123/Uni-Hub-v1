@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Store, BookOpen, ArrowLeft } from "lucide-react";
+import { Store, BookOpen, ArrowLeft, MessagesSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +16,12 @@ const adminSections = [
     description: "تحليلات Study Hub ومتابعة البلاغات والنشاط",
     href: "/admin/study-hub",
     icon: BookOpen,
+  },
+  {
+    title: "إدارة مجتمع الجامعة",
+    description: "مراجعة الستوري والبوستات والحذف والتثبيت بشكل فوري",
+    href: "/admin/campus-feed",
+    icon: MessagesSquare,
   },
 ];
 

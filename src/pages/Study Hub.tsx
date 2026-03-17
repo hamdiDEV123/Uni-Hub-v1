@@ -27,6 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const universities = [
 	"جامعة الدلتا",
@@ -873,6 +874,18 @@ export default function StudyHub() {
 						return (
 						<Card key={material.id} className="rounded-3xl border-navy/20 bg-card/95 shadow-hard-sm">
 							<CardHeader className="space-y-3">
+								<div className="flex items-center gap-3">
+									<Avatar className="h-10 w-10 border border-border">
+										<AvatarImage src={material.owner_profile?.avatar_url ?? ""} />
+										<AvatarFallback className="bg-muted text-muted-foreground font-black">
+											{(material.owner_profile?.full_name?.trim() || "طالب").charAt(0)}
+										</AvatarFallback>
+									</Avatar>
+									<div className="text-right">
+										<p className="text-sm font-black text-foreground">{material.owner_profile?.full_name?.trim() || "طالب"}</p>
+										<p className="text-[11px] text-muted-foreground">{material.owner_profile?.university?.trim() || material.university || "جامعة غير محددة"}</p>
+									</div>
+								</div>
 								<div className="flex flex-wrap items-center gap-2">
 									<Badge variant="outline">{material.university}</Badge>
 									<Badge variant="outline">{material.faculty}</Badge>

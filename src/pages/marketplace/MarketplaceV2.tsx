@@ -29,75 +29,39 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { ListingModeFields } from "./components/ListingModeFields";
+import {
+  CATEGORY_LABELS,
+  LISTING_MODE_LABELS,
+  LISTING_STATUS_LABELS,
+  MODERATION_STATUS_LABELS,
+} from "./marketplace.constants";
+import {
+  DEFAULT_PRODUCT_FORM,
+  MARKETPLACE_CATEGORIES,
+  type CategoryFilter,
+  type MyListingItem,
+  type ProductCardItem,
+  type SortBy,
+  type StockFilter,
+} from "./marketplace.types";
 
-type ProductCardItem = {
-  id: string;
-  seller_id: string;
-  title: string;
-  description?: string | null;
-  price: number;
-  image_url?: string[] | null;
-  category?: string;
-  stock_qty?: number;
-  is_featured?: boolean;
-  condition?: string | null;
-  product_condition?: string | null;
-};
+function buildSafeImageObjectPath(userId: string, file: File): string {
+  const originalName = file.name || "image";
+  const extensionMatch = originalName.match(/\.([a-zA-Z0-9]+)$/);
+  const extension = extensionMatch ? extensionMatch[1].toLowerCase() : "jpg";
 
-type MyListingItem = {
-  id: string;
-  title: string;
-  price: number;
-  stock_qty: number;
-  listing_status: string;
-  moderation_status: string;
-  rejection_reason: string | null;
-};
+  const baseName = originalName
+    .replace(/\.[^/.]+$/, "")
+    .normalize("NFKD")
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
 
-const CATEGORIES = ["all", "Medical", "Engineering", "Tech", "Scrap"] as const;
-const CATEGORY_LABELS: Record<string, string> = {
-  all: "كل التصنيفات",
-  Medical: "طبي",
-  Engineering: "هندسي",
-  Tech: "تقني",
-  Scrap: "خردة",
-};
-const LISTING_STATUS_LABELS: Record<string, string> = {
-  active: "نشط",
-  pending_review: "قيد المراجعة",
-  sold: "تم البيع",
-  archived: "مؤرشف",
-};
-const MODERATION_STATUS_LABELS: Record<string, string> = {
-  approved: "مقبول",
-  pending: "معلّق",
-  rejected: "مرفوض",
-};
-type CategoryFilter = (typeof CATEGORIES)[number];
-type StockFilter = "all" | "in_stock" | "out_of_stock";
-type SortBy = "featured_latest" | "latest" | "price_asc" | "price_desc";
-
-type ProductFormData = {
-  title: string;
-  description: string;
-  category: Exclude<CategoryFilter, "all">;
-  price: string;
-  stock_qty: string;
-  product_condition: string;
-  phone: string;
-  is_negotiable: boolean;
-};
-
-const DEFAULT_FORM: ProductFormData = {
-  title: "",
-  description: "",
-  category: "Engineering",
-  price: "",
-  stock_qty: "1",
-  product_condition: "used",
-  phone: "",
-  is_negotiable: false,
-};
+  const safeBaseName = baseName || "image";
+  return `${userId}/${crypto.randomUUID()}-${safeBaseName}.${extension}`;
+}
 
 export default function Marketplace() {
   const { user } = useAuth();
@@ -120,7 +84,7 @@ export default function Marketplace() {
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [form, setForm] = useState<ProductFormData>(DEFAULT_FORM);
+  const [form, setForm] = useState(DEFAULT_PRODUCT_FORM);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const { data: products = [], isLoading, error: productsError } = useQuery({
@@ -214,13 +178,24 @@ export default function Marketplace() {
       }
       if (!user?.id) throw new Error("يجب تسجيل الدخول أولاً");
       if (!form.title.trim()) throw new Error("عنوان المنتج مطلوب");
-      if (!form.price || Number(form.price) <= 0) throw new Error("السعر يجب أن يكون أكبر من صفر");
+      if (form.listing_mode !== "barter" && (!form.price || Number(form.price) <= 0)) {
+        throw new Error("السعر يجب أن يكون أكبر من صفر");
+      }
       if (!form.stock_qty || Number(form.stock_qty) <= 0) throw new Error("الكمية يجب أن تكون 1 على الأقل");
       if (imageFiles.length === 0) throw new Error("يرجى رفع صورة واحدة على الأقل");
+      if (form.listing_mode === "rental" && (!form.rental_price_per_day || Number(form.rental_price_per_day) <= 0)) {
+        throw new Error("سعر الإيجار اليومي مطلوب");
+      }
+      if (form.listing_mode === "barter" && !form.barter_for.trim()) {
+        throw new Error("اكتب مطلوب مقابل ماذا في التبادل");
+      }
+      if (form.listing_mode === "service" && (!form.service_delivery_days || Number(form.service_delivery_days) <= 0)) {
+        throw new Error("مدة تنفيذ الخدمة مطلوبة");
+      }
 
       const uploadedImages: string[] = [];
       for (const file of imageFiles) {
-        const fileName = `${user.id}/${crypto.randomUUID()}-${file.name}`;
+        const fileName = buildSafeImageObjectPath(user.id, file);
         const { error: uploadError } = await supabase.storage.from("product_images").upload(fileName, file);
         if (uploadError) throw uploadError;
 
@@ -232,12 +207,16 @@ export default function Marketplace() {
         title: form.title.trim(),
         description: form.description.trim(),
         category: form.category,
-        price: Number(form.price),
+        price: form.listing_mode === "barter" ? 1 : Number(form.price),
         stockQty: Number(form.stock_qty),
         productCondition: form.product_condition.trim() || "used",
         phone: form.phone.trim() || undefined,
         imageUrls: uploadedImages,
         isNegotiable: form.is_negotiable,
+        listingMode: form.listing_mode,
+        rentalPricePerDay: form.rental_price_per_day ? Number(form.rental_price_per_day) : undefined,
+        barterFor: form.barter_for.trim() || undefined,
+        serviceDeliveryDays: form.service_delivery_days ? Number(form.service_delivery_days) : undefined,
       });
     },
     onSuccess: async () => {
@@ -246,7 +225,7 @@ export default function Marketplace() {
         queryClient.invalidateQueries({ queryKey: ["marketplace-my-listings"] }),
       ]);
       setIsAddDialogOpen(false);
-      setForm(DEFAULT_FORM);
+      setForm(DEFAULT_PRODUCT_FORM);
       setImageFiles([]);
       toast.success("تم إرسال المنتج بنجاح للمراجعة");
     },
@@ -400,7 +379,21 @@ export default function Marketplace() {
                     <Label htmlFor="condition">{"حالة المنتج"}</Label>
                     <Input id="condition" value={form.product_condition} onChange={(e) => setForm((p) => ({ ...p, product_condition: e.target.value }))} placeholder="جديد / مستعمل" />
                   </div>
+                  <div className="space-y-2">
+                    <Label>{"نوع العرض"}</Label>
+                    <Select value={form.listing_mode} onValueChange={(value) => setForm((p) => ({ ...p, listing_mode: value as "sale" | "rental" | "barter" | "service" }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sale">{LISTING_MODE_LABELS.sale}</SelectItem>
+                        <SelectItem value="rental">{LISTING_MODE_LABELS.rental}</SelectItem>
+                        <SelectItem value="barter">{LISTING_MODE_LABELS.barter}</SelectItem>
+                        <SelectItem value="service">{LISTING_MODE_LABELS.service}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
+                <ListingModeFields form={form} setForm={setForm} />
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">{"رقم الهاتف"}</Label>
@@ -499,7 +492,7 @@ export default function Marketplace() {
             <div className="space-y-3">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2"><Filter className="w-4 h-4"/> التصنيفات</h3>
               <div className="space-y-2">
-                {CATEGORIES.map((category) => (
+                {MARKETPLACE_CATEGORIES.map((category) => (
                   <div key={category} className="flex items-center gap-2">
                     <Checkbox 
                       id={`cat-${category}`} 
@@ -571,7 +564,7 @@ export default function Marketplace() {
                <Filter className="w-4 h-4" /> الفلاتر
              </Button>
              {/* Quick Categories for Mobile */}
-             {CATEGORIES.slice(1).map(cat => (
+             {MARKETPLACE_CATEGORIES.slice(1).map(cat => (
                <Badge 
                 key={cat} 
                 variant={categoryFilter === cat ? "default" : "outline"} 
