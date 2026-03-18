@@ -5,13 +5,16 @@ import { Bell, User, Zap, Wallet, Trophy } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/lib/auth";
+
+type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: profile } = useQuery<Record<string, any> | null>({
+  const { data: profile } = useQuery<ProfileRow | null>({
     queryKey: ['user-profile-layout', user?.id],
     queryFn: async () => {
       const { data } = await supabase.from('profiles').select('*').eq('id', user?.id ?? '').single();
@@ -22,7 +25,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   const walletDisplay = Number(profile?.wallet ?? 0).toFixed(1);
 
-  const getRank = (p: { role?: string | null; verified_status?: boolean | null } | null) => {
+  const getRank = (p: Pick<ProfileRow, "role" | "verified_status"> | null) => {
     if (p?.role === 'store') return { label: 'بائع موثّق', color: 'text-primary bg-primary/10 border-primary/20' };
     if (p?.verified_status) return { label: 'حساب موثّق', color: 'text-success bg-success/10 border-success/20' };
     return { label: 'مستخدم عادي', color: 'text-muted-foreground bg-muted/30 border-border' };

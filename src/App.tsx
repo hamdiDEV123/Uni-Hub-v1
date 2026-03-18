@@ -23,6 +23,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const Profile = lazy(() => import("./pages/ProfileV2"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Chat = lazy(() => import("./pages/chat"));
+const Workspace = lazy(() => import("./pages/Workspace"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Marketplace = lazy(() => import("./pages/marketplace/MarketplaceV2"));
 const MarketplaceCheckout = lazy(() => import("./pages/marketplace/MarketplaceCheckoutV2"));
@@ -150,6 +151,7 @@ const App = () => (
               <Route path="/study-hub" element={<ProtectedRoute><StudyHub /></ProtectedRoute>} />
               <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
               <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+              <Route path="/workspace" element={<ProtectedRoute><Workspace /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/design-system" element={<AdminRoute><DesignSystem /></AdminRoute>} />
               <Route

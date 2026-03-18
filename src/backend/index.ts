@@ -7,3 +7,4 @@ export * from "./marketplaceApi";
 export * from "./notificationsApi";
 export * from "./rpc";
 export * from "./studyHubApi";
+export * from "./workspaceApi";
