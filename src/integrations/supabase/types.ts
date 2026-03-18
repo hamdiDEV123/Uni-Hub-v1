@@ -191,6 +191,66 @@ export type Database = {
           },
         ]
       }
+      workspace_pages: {
+        Row: {
+          content: Json
+          cover_image: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          is_archived: boolean
+          is_favorite: boolean
+          parent_id: string | null
+          position: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: Json
+          cover_image?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_archived?: boolean
+          is_favorite?: boolean
+          parent_id?: string | null
+          position?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          cover_image?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_archived?: boolean
+          is_favorite?: boolean
+          parent_id?: string | null
+          position?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_pages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_pages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           buyer_id: string
