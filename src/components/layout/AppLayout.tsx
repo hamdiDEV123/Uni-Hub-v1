@@ -4,20 +4,20 @@ import { AppSidebar } from "./AppSidebar";
 import { Bell, User, Zap, Wallet, Trophy } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import type { Database } from "@/integrations/supabase/types";
+import { fetchProfileById } from "@/backend/profileApi";
+
+type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const { data: profile } = useQuery<Record<string, any> | null>({
+  const { data: profile } = useQuery<ProfileRow | null>({
     queryKey: ['user-profile-layout', user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from('profiles').select('*').eq('id', user?.id ?? '').single();
-      return data;
-    },
-    enabled: !!user
+    queryFn: async () => fetchProfileById(user!.id),
+    enabled: !!user?.id
   });
 
   const walletDisplay = Number(profile?.wallet ?? 0).toFixed(1);

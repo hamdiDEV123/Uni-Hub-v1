@@ -210,6 +210,7 @@ export default function Workspace() {
       toast.error(error instanceof Error ? error.message : "تعذر حفظ المحتوى");
     },
   });
+  const saveContent = saveContentMutation.mutate;
 
   useEffect(() => {
     if (!selectedPage) return;
@@ -218,7 +219,7 @@ export default function Workspace() {
     setEditorBlocks(normalized);
     setLastSavedBlocksHash(hash);
     setSaveStatus("idle");
-  }, [selectedPage?.id]);
+  }, [selectedPage]);
 
   useEffect(() => {
     if (!selectedPage) return;
@@ -229,11 +230,11 @@ export default function Workspace() {
 
     const timer = setTimeout(() => {
       setSaveStatus("saving");
-      saveContentMutation.mutate({ pageId: selectedPage.id, content });
+      saveContent({ pageId: selectedPage.id, content });
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [editorBlocks, lastSavedBlocksHash, selectedPage?.id]);
+  }, [editorBlocks, lastSavedBlocksHash, saveContent, selectedPage]);
 
   const updateBlock = (blockId: string, updater: (block: WorkspaceBlock) => WorkspaceBlock) => {
     setEditorBlocks((previousBlocks) => previousBlocks.map((block) => (block.id === blockId ? updater(block) : block)));

@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { fetchProfileById, updateProfileById, updateProfileMediaUrlById } from "@/backend/profileApi";
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
@@ -38,13 +39,14 @@ export default function ProfileV2() {
   const [faculty, setFaculty] = useState("");
   const [studyYear, setStudyYear] = useState("");
 
-  const profileQuery = useQuery({
+  const profileQuery = useQuery<ProfileRow>({
     queryKey: ["profile-v2", user?.id ?? ""],
     enabled: Boolean(user?.id),
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user!.id).single();
-      if (error) throw error;
-      return data as ProfileRow;
+      if (!user?.id) {
+        throw new Error("Missing user id");
+      }
+      return fetchProfileById(user.id);
     },
   });
 
@@ -109,8 +111,7 @@ export default function ProfileV2() {
         onboarding_completed: true,
       };
 
-      const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
-      if (error) throw error;
+      await updateProfileById(user.id, payload);
     },
     onSuccess: async () => {
       await Promise.all([
@@ -136,11 +137,7 @@ export default function ProfileV2() {
       const { data } = supabase.storage.from("product_images").getPublicUrl(objectPath);
       const publicUrl = data.publicUrl;
 
-      const patch: Database["public"]["Tables"]["profiles"]["Update"] =
-        kind === "avatar" ? { avatar_url: publicUrl } : { cover_url: publicUrl };
-
-      const { error: updateError } = await supabase.from("profiles").update(patch).eq("id", user.id);
-      if (updateError) throw updateError;
+      await updateProfileMediaUrlById(user.id, kind, publicUrl);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["profile-v2", user?.id ?? ""] });

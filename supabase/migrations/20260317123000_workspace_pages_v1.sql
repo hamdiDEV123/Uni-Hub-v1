@@ -1,5 +1,7 @@
 BEGIN;
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE OR REPLACE FUNCTION public.touch_updated_at()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -35,6 +37,7 @@ CREATE INDEX IF NOT EXISTS idx_workspace_pages_user_updated
 CREATE INDEX IF NOT EXISTS idx_workspace_pages_user_favorites
   ON public.workspace_pages(user_id, is_favorite)
   WHERE is_archived = false;
+  
 
 ALTER TABLE public.workspace_pages ENABLE ROW LEVEL SECURITY;
 

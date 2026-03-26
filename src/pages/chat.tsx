@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { fetchProfilesByIds } from '@/backend/profileApi';
 
 type Message = {
   id: string;
@@ -67,10 +68,7 @@ export default function Chat() {
       
       if (ids.size === 0) return [];
 
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url, university')
-        .in('id', Array.from(ids));
+      const profiles = await fetchProfilesByIds(Array.from(ids));
       return (profiles as Profile[]) || [];
     },
     enabled: !!user?.id

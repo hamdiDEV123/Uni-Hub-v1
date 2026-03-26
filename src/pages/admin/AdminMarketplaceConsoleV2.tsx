@@ -4,6 +4,16 @@ import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  fetchPendingManualPaymentReceipts,
+  fetchPendingMarketplaceProducts,
+  fetchPendingPayoutRequests,
+  fetchPendingSellerUpgradeRequests,
+  type PendingPayoutRequestRow,
+  type PendingProductReviewRow,
+  type PendingReceiptReviewRow,
+  type PendingUpgradeRequestRow,
+} from "@/backend/adminApi";
+import {
   adminManageMarketProduct,
   reviewMarketManualPaymentReceipt,
   reviewMarketPayoutRequest,
@@ -32,46 +42,6 @@ import { fadeUpItem, pageVariants, staggerContainer } from "@/lib/motion";
 import type { Variants } from "framer-motion";
 
 type AdminTab = "products" | "receipts" | "upgrades" | "payouts" | "disputes";
-
-interface PendingProduct {
-  id: string;
-  title: string;
-  price: number;
-  category: string;
-  image_url: string[]; // Standardized to array
-  seller: { full_name: string | null; university_id: string | null } | null;
-}
-
-interface UpgradeRequestRow {
-  id: string;
-  user_id: string;
-  current_tier: string;
-  requested_tier: string;
-  note: string | null;
-  status: string;
-  profile: { full_name: string | null } | null;
-}
-
-interface PayoutRequestRow {
-  id: string;
-  seller_id: string;
-  amount: number;
-  currency: string;
-  status: string;
-  profile: { full_name: string | null; wallet: number | null } | null;
-}
-
-interface ReceiptRequestRow {
-  id: string;
-  order_id: string;
-  payment_method: string;
-  receipt_image_url: string;
-  receipt_link: string;
-  sender_phone: string | null;
-  transfer_reference: string | null;
-  status: string;
-  buyer: { full_name: string | null } | null;
-}
 
 const SECTION_TO_TAB: Record<string, AdminTab> = {
   products: "products",
@@ -129,122 +99,22 @@ export default function AdminMarketplaceConsoleV2() {
 
   const { data: pendingProducts = [] } = useQuery({
     queryKey: ["pending-products"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id,title,price,category,image_url,profiles:seller_id(full_name,university_id)")
-        .eq("moderation_status", "pending");
-
-      if (error) throw error;
-
-      // Safer mapping with optional chaining
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (data ?? []).map((row: any) => ({
-        id: row.id,
-        title: row.title,
-        price: row.price,
-        category: row.category,
-        // Handle image_url being string or array
-        image_url: Array.isArray(row.image_url)
-          ? row.image_url 
-          : typeof row.image_url === 'string' 
-            ? [row.image_url] // Fallback: wrap string in array
-            : [],
-        // Handle potential array response for single relation (Supabase quirk)
-        seller: Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
-      })) as PendingProduct[];
-    },
+    queryFn: fetchPendingMarketplaceProducts,
   });
 
   const { data: pendingReceipts = [] } = useQuery({
     queryKey: ["pending-receipts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("market_manual_payment_receipts")
-        .select("id,order_id,payment_method,receipt_image_url,sender_phone,transfer_reference,status,profiles:buyer_id(full_name)")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rows = (data ?? []) as any[];
-      const mapped = await Promise.all(
-        rows.map(async (row) => {
-          const rawReceipt = String(row.receipt_image_url ?? "");
-          let receiptLink = rawReceipt;
-
-          if (rawReceipt.startsWith("market_receipts:")) {
-            const filePath = rawReceipt.replace("market_receipts:", "");
-            const { data: signed, error: signedError } = await supabase.storage
-              .from("market_receipts")
-              .createSignedUrl(filePath, 60 * 60);
-            if (!signedError && signed?.signedUrl) receiptLink = signed.signedUrl;
-          }
-
-          return {
-            id: row.id,
-            order_id: row.order_id,
-            payment_method: row.payment_method,
-            receipt_image_url: rawReceipt,
-            receipt_link: receiptLink,
-            sender_phone: row.sender_phone,
-            transfer_reference: row.transfer_reference,
-            status: row.status,
-            buyer: Array.isArray(row.profiles) ? row.profiles[0] : row.profiles,
-          };
-        })
-      );
-
-      return mapped as ReceiptRequestRow[];
-    },
+    queryFn: fetchPendingManualPaymentReceipts,
   });
 
   const { data: upgradeRequests = [] } = useQuery({
     queryKey: ["upgrade-requests"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("market_seller_upgrade_requests")
-        .select("id,user_id,current_tier,requested_tier,note,status,profiles:user_id(full_name)")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (data ?? []).map((row: any) => ({
-        id: row.id,
-        user_id: row.user_id,
-        current_tier: row.current_tier,
-        requested_tier: row.requested_tier,
-        note: row.note,
-        status: row.status,
-        profile: Array.isArray(row.profiles) ? row.profiles[0] : row.profiles,
-      })) as UpgradeRequestRow[];
-    },
+    queryFn: fetchPendingSellerUpgradeRequests,
   });
 
   const { data: payoutRequests = [] } = useQuery({
     queryKey: ["payout-requests"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("market_payouts")
-        .select("id,seller_id,amount,currency,status,profiles:seller_id(full_name,wallet)")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (data ?? []).map((row: any) => ({
-        id: row.id,
-        seller_id: row.seller_id,
-        amount: row.amount,
-        currency: row.currency,
-        status: row.status,
-        profile: Array.isArray(row.profiles) ? row.profiles[0] : row.profiles,
-      })) as PayoutRequestRow[];
-    },
+    queryFn: fetchPendingPayoutRequests,
   });
 
   const productDecisionMutation = useMutation({

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { hasRequiredStudentContext } from "@/pages/profile/profile.utils";
+import { fetchDashboardProfileById, updateProfileById } from "@/backend/profileApi";
 
 type DashboardProfile = {
   full_name: string | null;
@@ -29,18 +30,14 @@ export default function DashboardHome() {
   const [faculty, setFaculty] = useState("");
   const [studyYear, setStudyYear] = useState("");
 
-  const profileQuery = useQuery({
+  const profileQuery = useQuery<DashboardProfile>({
     queryKey: ["dashboard-profile", user?.id ?? ""],
     enabled: Boolean(user?.id),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id,full_name,wallet,university,faculty,study_year,onboarding_completed")
-        .eq("id", user!.id)
-        .single();
-
-      if (error) throw error;
-      return data as DashboardProfile;
+      if (!user?.id) {
+        throw new Error("Missing user id");
+      }
+      return fetchDashboardProfileById(user.id);
     },
   });
 
@@ -111,8 +108,7 @@ export default function DashboardHome() {
         throw new Error("اكمل الجامعة والكلية والفرقة أولاً");
       }
 
-      const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
-      if (error) throw error;
+      await updateProfileById(user.id, payload);
     },
     onSuccess: async () => {
       await Promise.all([

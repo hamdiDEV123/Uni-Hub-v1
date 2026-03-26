@@ -20,6 +20,7 @@ import {
   createDeliveryOrderSecure,
   releaseDeliveryOrderSecure,
 } from "@/backend/deliveryApi";
+import { fetchProfileById } from "@/backend/profileApi";
 import { DELIVERY_MODE_LABELS, DELIVERY_MODE_SHORT_LABELS, DELIVERY_UNIVERSITIES } from "./delivery/delivery.constants";
 import { DeliveryRunnerStats } from "./delivery/components/DeliveryRunnerStats";
 import {
@@ -47,12 +48,8 @@ export default function DeliveryHub() {
   // 1. جلب بيانات المستخدم الحالية من الواجهة الخلفية (ملف شخصي، رصيد)
   const { data: profile } = useQuery({
     queryKey: ['user-profile', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', user?.id ?? '').single();
-      if (error) throw error;
-      return data as ProfileRow;
-    },
-    enabled: !!user,
+    queryFn: async () => fetchProfileById(user!.id) as Promise<ProfileRow>,
+    enabled: !!user?.id,
   });
 
   // 2. جلب الطلبات

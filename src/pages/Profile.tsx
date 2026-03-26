@@ -24,6 +24,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { fetchProfileById, setUniversityCardUrlById } from '@/backend/profileApi';
 
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 type ReviewRow = {
@@ -45,8 +46,7 @@ export default function Profile() {
       return;
     }
     try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      if (error) throw error;
+      const data = await fetchProfileById(user.id);
       setProfile(data ?? null);
     } catch {
       toast.error('حدث خطأ أثناء تحميل الملف الشخصي');
@@ -94,11 +94,7 @@ export default function Profile() {
       const { error: uploadError } = await supabase.storage.from('verification-docs').upload(filePath, file);
       if (uploadError) throw uploadError;
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ university_card_url: filePath })
-        .eq('id', user.id);
-      if (updateError) throw updateError;
+      await setUniversityCardUrlById(user.id, filePath);
     },
     onSuccess: () => {
       toast.success('تم رفع البطاقة.. جاري المراجعة');

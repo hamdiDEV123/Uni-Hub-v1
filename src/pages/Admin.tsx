@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,24 +13,15 @@ import {
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
-
-type ProductRow = Database['public']['Tables']['products']['Row'];
-type ProfileRow = Database['public']['Tables']['profiles']['Row'];
-type OrderRow = Database['public']['Tables']['orders']['Row'];
-type ProfileRowWithAdminNotes = ProfileRow & { admin_notes?: string | null };
-type ProfileAdminRow = ProfileRowWithAdminNotes & { status?: string };
-type ProfileDbUpdate = Partial<Pick<Database['public']['Tables']['profiles']['Update'], 'verified_status' | 'university_card_url' | 'role'>> & {
-  admin_notes?: string | null;
-};
-type ProfileAdminUpdate = Partial<ProfileDbUpdate> & { status?: 'active' | 'banned' };
-type OrderStat = { name: string; value: number };
-type AdminStats = {
-  totalUsers: number;
-  commission: number;
-  activeStores: number;
-  pendingVerifications: number;
-  orderStats: OrderStat[];
-};
+import {
+  fetchAdminDashboardStats,
+  fetchAdminUsers,
+  updateAdminUserStatus,
+  type AdminDashboardStats,
+  type AdminOrderStat,
+  type ProfileAdminRow,
+  type ProfileAdminUpdate,
+} from '@/backend/adminApi';
 
 export default function AdminDashboard() {
   const queryClient = useQueryClient();
@@ -39,59 +29,20 @@ export default function AdminDashboard() {
   const [announcement, setAnnouncement] = useState('');
 
   // 1. جلب الإحصائيات (حقيقية من الداتابيز)
-  const { data: stats } = useQuery<AdminStats>({
+  const { data: stats } = useQuery<AdminDashboardStats>({
     queryKey: ['admin-stats'],
-    queryFn: async () => {
-      const { data: prods } = await supabase.from('products').select('*');
-      const { data: users } = await supabase.from('profiles').select('*');
-      const { data: orders } = await supabase.from('orders').select('*');
-      
-      const p = (prods ?? []) as ProductRow[];
-      const u = (users ?? []) as ProfileAdminRow[];
-      const o = (orders ?? []) as OrderRow[];
-
-      return {
-        totalUsers: u.length,
-        commission: o.filter(ord => ord.status === 'delivered').reduce((acc, curr) => acc + (Number(curr.fee ?? 0) * 0.1), 0),
-        activeStores: u.filter(user => user.role === 'store').length,
-        pendingVerifications: u.filter(user => user.university_card_url && !user.verified_status).length,
-        orderStats: [
-          { name: 'معلق', value: o.filter(ord => ord.status === 'pending').length },
-          { name: 'نشط', value: o.filter(ord => ord.status === 'active').length },
-          { name: 'مكتمل', value: o.filter(ord => ord.status === 'delivered').length },
-        ]
-      };
-    },
+    queryFn: fetchAdminDashboardStats,
   });
 
   // 2. جلب قائمة المستخدمين
   const { data: allUsers } = useQuery<ProfileAdminRow[]>({
     queryKey: ['admin-users', searchQuery],
-    queryFn: async () => {
-      let q = supabase.from('profiles').select('*');
-      if (searchQuery) q = q.ilike('full_name', `%${searchQuery}%`);
-      const { data } = await q;
-      const rows = (data ?? []) as ProfileRowWithAdminNotes[];
-      return rows.map((user) => ({
-        ...user,
-        status: user.admin_notes?.includes('status:banned') ? 'banned' : 'active',
-      })) as ProfileAdminRow[];
-    },
+    queryFn: () => fetchAdminUsers(searchQuery),
   });
 
   // 3. أوامر الإدارة (التوثيق والحظر)
   const updateStatus = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: ProfileAdminUpdate }) => {
-      const { status, ...dbUpdates } = updates;
-      const normalizedUpdates: ProfileDbUpdate = { ...dbUpdates };
-
-      if (status) {
-        normalizedUpdates.admin_notes = status === 'banned' ? 'status:banned' : null;
-      }
-
-      const { error } = await supabase.from('profiles').update(normalizedUpdates).eq('id', id);
-      if (error) throw error;
-    },
+    mutationFn: (payload: { id: string; updates: ProfileAdminUpdate }) => updateAdminUserStatus(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
@@ -213,7 +164,7 @@ export default function AdminDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={stats?.orderStats} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  {stats?.orderStats?.map((entry: OrderStat, index: number) => (
+                  {stats?.orderStats?.map((entry: AdminOrderStat, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchProfileRoleById } from "@/backend/profileApi";
 import {
   Sidebar,
   SidebarContent,
@@ -54,17 +54,11 @@ export function AppSidebar() {
   useEffect(() => {
     async function getProfile() {
       if (!user?.id) return;
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      setRole(data?.role ?? null);
+      const nextRole = await fetchProfileRoleById(user.id);
+      setRole(nextRole);
     }
 
-    getProfile();
+    void getProfile();
   }, [user]);
 
   const isAdmin = role === "admin";
