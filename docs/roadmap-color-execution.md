@@ -68,7 +68,17 @@
   - Verify all event producers emit `link` consistently after migration rollout.
 
 6. `GREEN` Delivery/Housing/Sports V2
-- Status: `PENDING`
+- Status: `IN_PROGRESS`
+- Done:
+  - Housing roommate matcher schema/types/migration sync completed.
+  - Campus Feed modular split started and stabilized:
+    - Extracted `StoryViewer`, `StoryComposer`, `FeedPostCard`, `FeedSidebar`.
+    - Added `useFeedInteractionState` for comment/hashtag UI state.
+    - Added targeted Campus Feed tests in `src/test/campusFeed.test.ts`.
+  - Admin Campus Feed Console UX hardened (retry states, confirmations, per-item pending states).
+- Docs:
+  - `docs/campus-feed-modularization.md`
+  - `docs/release-handoff-campus-feed.md`
 
 7. `YELLOW` UX/Arabic Polish
 - Status: `PENDING`

@@ -94,6 +94,62 @@ export type Database = {
           },
         ]
       }
+      roommate_requests: {
+        Row: {
+          area: string | null
+          budget_max: number | null
+          budget_min: number | null
+          created_at: string
+          description: string | null
+          id: string
+          phone: string | null
+          preferred_faculty: string | null
+          preferred_gender: string
+          sleep_schedule: string
+          smoking_preference: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          area?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          phone?: string | null
+          preferred_faculty?: string | null
+          preferred_gender?: string
+          sleep_schedule?: string
+          smoking_preference?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          area?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          phone?: string | null
+          preferred_faculty?: string | null
+          preferred_gender?: string
+          sleep_schedule?: string
+          smoking_preference?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roommate_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -135,35 +191,113 @@ export type Database = {
           },
         ]
       }
+      workspace_pages: {
+        Row: {
+          content: Json
+          cover_image: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          is_archived: boolean
+          is_favorite: boolean
+          parent_id: string | null
+          position: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: Json
+          cover_image?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_archived?: boolean
+          is_favorite?: boolean
+          parent_id?: string | null
+          position?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          cover_image?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_archived?: boolean
+          is_favorite?: boolean
+          parent_id?: string | null
+          position?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_pages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_pages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           buyer_id: string
           created_at: string
+          description: string | null
+          fee: number | null
           id: string
           location: string | null
+          otp_code: string | null
+          phone_number: string | null
           product_id: string | null
           runner_id: string | null
           status: Database["public"]["Enums"]["order_status"]
+          title: string | null
+          type: string | null
           updated_at: string
         }
         Insert: {
           buyer_id: string
           created_at?: string
+          description?: string | null
+          fee?: number | null
           id?: string
           location?: string | null
+          otp_code?: string | null
+          phone_number?: string | null
           product_id?: string | null
           runner_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          title?: string | null
+          type?: string | null
           updated_at?: string
         }
         Update: {
           buyer_id?: string
           created_at?: string
+          description?: string | null
+          fee?: number | null
           id?: string
           location?: string | null
+          otp_code?: string | null
+          phone_number?: string | null
           product_id?: string | null
           runner_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          title?: string | null
+          type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -189,6 +323,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketplace_ads: {
+        Row: {
+          budget: number
+          created_at: string
+          end_at: string
+          id: string
+          product_id: string | null
+          start_at: string
+          vendor_id: string
+        }
+        Insert: {
+          budget: number
+          created_at?: string
+          end_at: string
+          id?: string
+          product_id?: string | null
+          start_at: string
+          vendor_id: string
+        }
+        Update: {
+          budget?: number
+          created_at?: string
+          end_at?: string
+          id?: string
+          product_id?: string | null
+          start_at?: string
+          vendor_id?: string
+        }
+        Relationships: []
+      }
+      product_views: {
+        Row: {
+          id: string
+          product_id: string
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
       }
       market_addresses: {
         Row: {
@@ -593,42 +820,781 @@ export type Database = {
           },
         ]
       }
+      campus_posts: {
+        Row: {
+          author_id: string
+          category: string
+          comments_count: number
+          content: string | null
+          created_at: string
+          downvotes_count: number
+          expires_at: string | null
+          id: string
+          is_anonymous: boolean
+          is_pinned: boolean
+          media_url: string | null
+          pinned_at: string | null
+          pinned_by: string | null
+          post_type: string
+          scope_faculty: string | null
+          scope_study_year: string | null
+          scope_term: string | null
+          updated_at: string
+          upvotes_count: number
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          comments_count?: number
+          content?: string | null
+          created_at?: string
+          downvotes_count?: number
+          expires_at?: string | null
+          id?: string
+          is_anonymous?: boolean
+          is_pinned?: boolean
+          media_url?: string | null
+          pinned_at?: string | null
+          pinned_by?: string | null
+          post_type: string
+          scope_faculty?: string | null
+          scope_study_year?: string | null
+          scope_term?: string | null
+          updated_at?: string
+          upvotes_count?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          comments_count?: number
+          content?: string | null
+          created_at?: string
+          downvotes_count?: number
+          expires_at?: string | null
+          id?: string
+          is_anonymous?: boolean
+          is_pinned?: boolean
+          media_url?: string | null
+          pinned_at?: string | null
+          pinned_by?: string | null
+          post_type?: string
+          scope_faculty?: string | null
+          scope_study_year?: string | null
+          scope_term?: string | null
+          updated_at?: string
+          upvotes_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_posts_pinned_by_fkey"
+            columns: ["pinned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campus_post_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          is_verified_answer: boolean
+          parent_comment_id: string | null
+          post_id: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          is_verified_answer?: boolean
+          parent_comment_id?: string | null
+          post_id: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          is_verified_answer?: boolean
+          parent_comment_id?: string | null
+          post_id?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_post_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "campus_post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "campus_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_post_comments_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campus_post_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_type: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_type: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_post_interactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "campus_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_post_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campus_post_hashtags: {
+        Row: {
+          created_at: string
+          hashtag: string
+          post_id: string
+        }
+        Insert: {
+          created_at?: string
+          hashtag: string
+          post_id: string
+        }
+        Update: {
+          created_at?: string
+          hashtag?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_post_hashtags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "campus_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campus_post_polls: {
+        Row: {
+          allow_multiple: boolean
+          created_at: string
+          id: string
+          post_id: string
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          allow_multiple?: boolean
+          created_at?: string
+          id?: string
+          post_id: string
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          allow_multiple?: boolean
+          created_at?: string
+          id?: string
+          post_id?: string
+          question?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_post_polls_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "campus_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campus_post_poll_options: {
+        Row: {
+          created_at: string
+          id: string
+          option_text: string
+          poll_id: string
+          sort_order: number
+          updated_at: string
+          votes_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_text: string
+          poll_id: string
+          sort_order?: number
+          updated_at?: string
+          votes_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_text?: string
+          poll_id?: string
+          sort_order?: number
+          updated_at?: string
+          votes_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_post_poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "campus_post_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campus_post_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_id: string
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_id: string
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_id?: string
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_post_poll_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "campus_post_poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_post_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "campus_post_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_post_poll_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campus_story_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          reaction_type: string
+          story_post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reaction_type: string
+          story_post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reaction_type?: string
+          story_post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_story_reactions_story_post_id_fkey"
+            columns: ["story_post_id"]
+            isOneToOne: false
+            referencedRelation: "campus_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_story_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_materials: {
+        Row: {
+          course_name: string
+          created_at: string
+          description: string | null
+          downvotes: number
+          faculty: string
+          id: string
+          material_type: string
+          owner_id: string
+          resource_url: string
+          resource_url_backup: string | null
+          resource_url_normalized: string
+          status: string
+          study_year: string
+          term: string
+          title: string
+          updated_at: string
+          upvotes: number
+          university: string
+        }
+        Insert: {
+          course_name: string
+          created_at?: string
+          description?: string | null
+          downvotes?: number
+          faculty: string
+          id?: string
+          material_type: string
+          owner_id: string
+          resource_url: string
+          resource_url_backup?: string | null
+          resource_url_normalized?: string
+          status?: string
+          study_year: string
+          term: string
+          title: string
+          updated_at?: string
+          upvotes?: number
+          university?: string
+        }
+        Update: {
+          course_name?: string
+          created_at?: string
+          description?: string | null
+          downvotes?: number
+          faculty?: string
+          id?: string
+          material_type?: string
+          owner_id?: string
+          resource_url?: string
+          resource_url_backup?: string | null
+          resource_url_normalized?: string
+          status?: string
+          study_year?: string
+          term?: string
+          title?: string
+          updated_at?: string
+          upvotes?: number
+          university?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_materials_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_reports: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          reason: string | null
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          reason?: string | null
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          reason?: string | null
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_reports_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_material_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_favorites_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_material_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_views: {
+        Row: {
+          id: string
+          material_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          material_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          material_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_views_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_material_views_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_votes: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          updated_at: string
+          user_id: string
+          vote: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          updated_at?: string
+          user_id: string
+          vote: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          updated_at?: string
+          user_id?: string
+          vote?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_votes_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_material_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_gamification: {
+        Row: {
+          current_streak: number
+          highest_streak: number
+          karma_points: number
+          last_active_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          highest_streak?: number
+          karma_points?: number
+          last_active_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          highest_streak?: number
+          karma_points?: number
+          last_active_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_gamification_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
+          cover_url: string | null
           created_at: string
+          faculty: string | null
           full_name: string
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
+          onboarding_completed: boolean
+          phone: string | null
           role: Database["public"]["Enums"]["app_role"]
+          study_year: string | null
+          university: string | null
           university_id: string | null
+          university_card_url: string | null
           updated_at: string
           verified_status: boolean
           wallet: number
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
+          cover_url?: string | null
           created_at?: string
+          faculty?: string | null
           full_name?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id: string
+          onboarding_completed?: boolean
+          phone?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          study_year?: string | null
+          university?: string | null
           university_id?: string | null
+          university_card_url?: string | null
           updated_at?: string
           verified_status?: boolean
           wallet?: number
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
+          cover_url?: string | null
           created_at?: string
+          faculty?: string | null
           full_name?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
+          onboarding_completed?: boolean
+          phone?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          study_year?: string | null
+          university?: string | null
           university_id?: string | null
+          university_card_url?: string | null
           updated_at?: string
           verified_status?: boolean
           wallet?: number
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number | null
+          reviewer_id: string | null
+          target_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          reviewer_id?: string | null
+          target_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number | null
+          reviewer_id?: string | null
+          target_id?: string
+        }
+        Relationships: []
+      }
+      sports_hub: {
+        Row: {
+          contact_phone: string | null
+          created_at: string
+          current_players: number
+          event_date: string
+          event_time: string
+          gender_preference: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          joined_users: string[] | null
+          location: string
+          max_players: number
+          price_per_person: number
+          skill_level: string
+          sport_type: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          contact_phone?: string | null
+          created_at?: string
+          current_players?: number
+          event_date: string
+          event_time: string
+          gender_preference?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          joined_users?: string[] | null
+          location: string
+          max_players: number
+          price_per_person: number
+          skill_level: string
+          sport_type: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          contact_phone?: string | null
+          created_at?: string
+          current_players?: number
+          event_date?: string
+          event_time?: string
+          gender_preference?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          joined_users?: string[] | null
+          location?: string
+          max_players?: number
+          price_per_person?: number
+          skill_level?: string
+          sport_type?: string
+          title?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -637,11 +1603,50 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_market_cart_item_secure: {
+        Args: {
+          _product_id: string
+          _quantity?: number
+        }
+        Returns: number
+      }
       admin_manage_market_product: {
         Args: {
           _action?: string | null
           _product_id?: string | null
           _reason?: string | null
+        }
+        Returns: string
+      }
+      calculate_commission: {
+        Args: {
+          _order_total: number
+          _vendor_id: string
+        }
+        Returns: number
+      }
+      claim_delivery_order_secure: {
+        Args: {
+          _order_id: string
+        }
+        Returns: string
+      }
+      complete_delivery_order_secure: {
+        Args: {
+          _order_id: string
+          _otp: string
+        }
+        Returns: string
+      }
+      create_delivery_order_secure: {
+        Args: {
+          _campus: string
+          _dropoff: string
+          _fee: number
+          _phone: string
+          _pickup: string
+          _title: string
+          _type?: string
         }
         Returns: string
       }
@@ -652,12 +1657,65 @@ export type Database = {
         }
         Returns: number
       }
+      create_market_product_listing_secure: {
+        Args: {
+          _category?: Database["public"]["Enums"]["product_category"]
+          _description?: string
+          _image_urls?: string[]
+          _is_negotiable?: boolean
+          _phone?: string | null
+          _price?: number
+          _product_condition?: string
+          _stock_qty?: number
+          _title: string
+        }
+        Returns: string
+      }
+      create_market_product_listing_v3_secure: {
+        Args: {
+          _barter_for?: string | null
+          _category?: Database["public"]["Enums"]["product_category"]
+          _description?: string
+          _image_urls?: string[]
+          _is_negotiable?: boolean
+          _listing_mode?: Database["public"]["Enums"]["market_listing_mode"]
+          _phone?: string | null
+          _price?: number
+          _product_condition?: string
+          _rental_price_per_day?: number | null
+          _service_delivery_days?: number | null
+          _stock_qty?: number
+          _title: string
+        }
+        Returns: string
+      }
       create_market_checkout_order: {
         Args: {
           _payment_method?: string
           _product_id: string
         }
         Returns: string
+      }
+      create_vendor: {
+        Args: {
+          _campus_id?: string | null
+          _logo_url?: string | null
+          _shop_name: string
+          _type: string
+          _user_id: string
+        }
+        Returns: string
+      }
+      get_dashboard_summary: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          notification_count: number
+          order_count: number
+          product_count: number
+          profile: Json
+        }[]
       }
       get_market_checkout_breakdown: {
         Args: {
@@ -669,6 +1727,30 @@ export type Database = {
           service_fee: number
           subtotal: number
           total: number
+        }[]
+      }
+      get_vendor_by_user: {
+        Args: {
+          _user_id: string
+        }
+        Returns: {
+          campus_id: string | null
+          id: string
+          logo_url: string | null
+          shop_name: string
+          subscription_status: string | null
+          type: string
+          verified: boolean
+        }[]
+      }
+      get_vendor_settings: {
+        Args: {
+          _vendor_id: string
+        }
+        Returns: {
+          commission_rate: number
+          currency: string
+          shipping_fee: number
         }[]
       }
       has_role: {
@@ -685,6 +1767,24 @@ export type Database = {
         }
         Returns: string
       }
+      record_campus_activity: {
+        Args: {
+          _karma_delta?: number
+          _user_id: string
+        }
+        Returns: {
+          current_streak: number
+          highest_streak: number
+          karma_points: number
+          last_active_date: string
+        }[]
+      }
+      refresh_campus_post_counters: {
+        Args: {
+          _post_id: string
+        }
+        Returns: undefined
+      }
       request_market_payout: {
         Args: {
           _amount?: number | null
@@ -698,6 +1798,12 @@ export type Database = {
         }
         Returns: string
       }
+      release_delivery_order_secure: {
+        Args: {
+          _order_id: string
+        }
+        Returns: string
+      }
       review_market_manual_payment_receipt: {
         Args: {
           _admin_note?: string | null
@@ -705,6 +1811,14 @@ export type Database = {
           _order_id: string
         }
         Returns: "pending" | "approved" | "rejected"
+      }
+      review_market_payout_request: {
+        Args: {
+          _admin_note?: string | null
+          _approve: boolean
+          _payout_id: string
+        }
+        Returns: string
       }
       review_market_seller_upgrade_request: {
         Args: {
@@ -723,6 +1837,79 @@ export type Database = {
           _transfer_reference?: string | null
         }
         Returns: string
+      }
+      toggle_campus_post_upvote: {
+        Args: {
+          _post_id: string
+        }
+        Returns: {
+          upvotes_count: number
+          user_has_upvoted: boolean
+        }[]
+      }
+      vote_campus_post: {
+        Args: {
+          _post_id: string
+          _vote: number
+        }
+        Returns: {
+          downvotes_count: number
+          upvotes_count: number
+          user_vote: number
+        }[]
+      }
+      create_campus_post_poll: {
+        Args: {
+          _options: string[]
+          _post_id: string
+          _question: string
+        }
+        Returns: string
+      }
+      fetch_campus_trending_hashtags: {
+        Args: {
+          _hours?: number
+          _limit?: number
+        }
+        Returns: {
+          hashtag: string
+          posts_count: number
+          trend_score: number
+        }[]
+      }
+      vote_campus_poll: {
+        Args: {
+          _option_id: string
+          _post_id: string
+        }
+        Returns: {
+          option_id: string
+          total_votes: number
+          user_option_id: string | null
+          votes_count: number
+        }[]
+      }
+      react_to_campus_story: {
+        Args: {
+          _reaction_type: string
+          _story_post_id: string
+        }
+        Returns: {
+          total_reactions: number
+          user_reaction_type: string | null
+        }[]
+      }
+      vote_study_material: {
+        Args: {
+          _material_id: string
+          _vote: number
+        }
+        Returns: {
+          downvotes: number
+          score: number
+          upvotes: number
+          user_vote: number
+        }[]
       }
       transition_market_order_status: {
         Args: {
@@ -744,6 +1931,7 @@ export type Database = {
       app_role: "student" | "runner" | "admin" | "store"
       gender_type: "male" | "female" | "any"
       housing_type: "apartment" | "room" | "shared" | "studio"
+      market_listing_mode: "sale" | "rental" | "barter" | "service"
       notification_type: "System" | "Sports" | "Market"
       order_status: "pending" | "active" | "delivered"
       product_category: "Medical" | "Engineering" | "Tech" | "Scrap"
@@ -757,6 +1945,7 @@ export const Constants = {
       app_role: ["student", "runner", "admin", "store"],
       gender_type: ["male", "female", "any"],
       housing_type: ["apartment", "room", "shared", "studio"],
+      market_listing_mode: ["sale", "rental", "barter", "service"],
       notification_type: ["System", "Sports", "Market"],
       order_status: ["pending", "active", "delivered"],
       product_category: ["Medical", "Engineering", "Tech", "Scrap"],

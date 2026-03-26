@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "types": ["vitest/globals"],
+    // include Vitest globals (describe, it, expect, vi, etc.) so test files
+    // resolve without errors. adding "vitest" as well ensures the namespace is
+    // available in case editors pick up the base type definitions.
+    "types": ["vitest/globals", "vitest"],
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],

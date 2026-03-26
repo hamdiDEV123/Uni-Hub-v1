@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" class="w-full h-full"><defs><linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0F172A"/><stop offset="100%" stop-color="#2E1065"/></linearGradient></defs><style>
+						@keyframes pulseBg { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+						@keyframes floatText { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(4px); } }
+						@keyframes floatMascot { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+						@keyframes headSnapLeft {
+							0%, 15% { opacity: 1; transform: translateX(0); }
+							15.1%, 75% { opacity: 0; transform: translateX(-10px); }
+							75.1%, 100% { opacity: 1; transform: translateX(0); }
+						}
+						@keyframes headSnapFront {
+							0%, 15% { opacity: 0; transform: translateX(10px); }
+							15.1%, 75% { opacity: 1; transform: translateX(0); }
+							75.1%, 100% { opacity: 0; transform: translateX(10px); }
+						}
+						@keyframes hairPhysics {
+							0%, 14% { transform: skewX(0deg); }
+							15.5% { transform: skewX(-8deg); }
+							18% { transform: skewX(4deg); }
+							21%, 74% { transform: skewX(0deg); }
+							75.5% { transform: skewX(8deg); }
+							78% { transform: skewX(-4deg); }
+							81%, 100% { transform: skewX(0deg); }
+						}
+						@keyframes storyHandMove {
+							0%, 18% { transform: translate(400px, 480px) rotate(45deg); opacity: 0; }
+							24%, 32% { transform: translate(175px, 200px) rotate(-5deg); opacity: 1; }
+							38%, 100% { transform: translate(400px, 480px) rotate(45deg); opacity: 0; }
+						}
+						@keyframes glassesPush {
+							0%, 22% { transform: translateY(0); }
+							25%, 31% { transform: translateY(-5px); }
+							35%, 100% { transform: translateY(0); }
+						}
+						@keyframes lensSparkle {
+							0%, 31% { transform: scale(0) rotate(0deg); opacity: 0; }
+							34% { transform: scale(1.6) rotate(45deg); opacity: 1; }
+							37% { transform: scale(1.2) rotate(90deg); opacity: 1; }
+							41%, 100% { transform: scale(0) rotate(135deg); opacity: 0; }
+						}
+						.anim-pulse { animation: pulseBg 4s ease-in-out infinite; transform-origin: 250px 250px; }
+						.anim-float-text { animation: floatText 4s ease-in-out infinite; }
+						.anim-float { animation: floatMascot 4s ease-in-out infinite; }
+						.anim-head-left { animation: headSnapLeft 6s infinite; }
+						.anim-head-front { animation: headSnapFront 6s infinite; }
+						.anim-hair-physics { animation: hairPhysics 6s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite; transform-origin: 250px 300px; }
+						.anim-hand-greeting { animation: storyHandMove 6s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite; }
+						.anim-glasses-push { animation: glassesPush 6s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite; }
+						.anim-sparkle { animation: lensSparkle 6s infinite; transform-origin: 205px 250px; }
+					</style><g transform="translate(0, 0)"><circle cx="250" cy="250" r="230" fill="url(#bgGradient)" class="anim-pulse"/><clipPath id="badge-clip"><circle cx="250" cy="250" r="230"/></clipPath><g clip-path="url(#badge-clip)"><g><g transform="translate(25, 20)" fill="#1D4ED8"><rect x="90" y="320" width="85" height="200" rx="15"/><rect x="325" y="320" width="85" height="200" rx="15"/><path d="M 140 320 H 360 V 460 A 15 15 0 0 1 345 475 H 155 A 15 15 0 0 1 140 460 Z"/></g><g fill="#FFFFFF"><rect x="90" y="320" width="85" height="200" rx="15"/><rect x="325" y="320" width="85" height="200" rx="15"/></g><g fill="#1E3A8A"><path d="M 140 320 H 360 V 460 A 15 15 0 0 1 345 475 H 155 A 15 15 0 0 1 140 460 Z"/></g><g><path d="M 250 320 V 475" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/><path d="M 285 360 V 380 A 15 15 0 0 0 315 380 V 360" stroke="#FBBF24" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M 285 360 H 292 M 308 360 H 315" stroke="#FBBF24" stroke-width="6" stroke-linecap="round"/></g><g class="anim-head-left"><g transform="translate(25, 20)" fill="#1D4ED8"><path d="M 160 190 V 300 A 90 90 0 0 0 340 300 V 190 Z"/></g><g class="anim-hair-physics"><g transform="translate(25, 20)" fill="#1D4ED8"><g transform="translate(0, 25)"><path d="M 130 230 Q 120 140 180 90 Q 240 40 300 80 Q 360 70 360 160 Q 360 200 345 240 Q 310 180 270 200 Q 230 160 190 200 Q 160 180 130 230 Z"/><path d="M 240 70 Q 270 10 300 50 Q 270 60 240 70 Z"/></g></g></g><g fill="#FFFFFF"><path d="M 160 190 V 300 A 90 90 0 0 0 340 300 V 190 Z"/></g><g class="anim-hair-physics"><g fill="#1E3A8A"><g transform="translate(0, 25)"><path d="M 130 230 Q 120 140 180 90 Q 240 40 300 80 Q 360 70 360 160 Q 360 200 345 240 Q 310 180 270 200 Q 230 160 190 200 Q 160 180 130 230 Z"/><path d="M 240 70 Q 270 10 300 50 Q 270 60 240 70 Z"/></g></g></g><path d="M 195 268 Q 215 262 235 268" stroke="#0F172A" stroke-width="8" stroke-linecap="round" fill="none"/><g><circle cx="260" cy="275" r="28" fill="#0F172A" stroke="none"/><path d="M 245 262 L 255 252 M 240 275 L 265 250" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/></g><g><circle cx="180" cy="275" r="20" fill="#0F172A" stroke="none"/><path d="M 170 265 L 175 260 M 165 275 L 185 255" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.8"/></g><path d="M 190 320 Q 215 345 245 325" stroke="#0F172A" stroke-width="14" stroke-linecap="round" fill="none"/></g><g class="anim-head-front"><g transform="translate(25, 20)" fill="#1D4ED8"><path d="M 160 190 V 300 A 90 90 0 0 0 340 300 V 190 Z"/></g><g class="anim-hair-physics"><g transform="translate(25, 20)" fill="#1D4ED8"><g transform="translate(0, 25)"><path d="M 140 220 Q 130 140 180 90 Q 220 50 270 80 Q 330 60 360 140 Q 370 180 360 220 Q 340 170 310 190 Q 280 150 250 180 Q 220 150 190 190 Q 160 170 140 220 Z"/><path d="M 230 80 Q 250 20 280 60 Q 260 70 230 80 Z"/></g></g></g><g fill="#FFFFFF"><path d="M 160 190 V 300 A 90 90 0 0 0 340 300 V 190 Z"/></g><g class="anim-hair-physics"><g fill="#1E3A8A"><g transform="translate(0, 25)"><path d="M 140 220 Q 130 140 180 90 Q 220 50 270 80 Q 330 60 360 140 Q 370 180 360 220 Q 340 170 310 190 Q 280 150 250 180 Q 220 150 190 190 Q 160 170 140 220 Z"/><path d="M 230 80 Q 250 20 280 60 Q 260 70 230 80 Z"/></g></g></g><g class="anim-glasses-push"><path d="M 235 268 Q 250 258 265 268" stroke="#0F172A" stroke-width="8" stroke-linecap="round" fill="none"/><g><circle cx="290" cy="275" r="28" fill="#0F172A" stroke="none"/><path d="M 275 262 L 285 252 M 270 275 L 295 250" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/></g><g><circle cx="210" cy="275" r="28" fill="#0F172A" stroke="none"/><path d="M 195 262 L 205 252 M 190 275 L 215 250" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/></g><g class="anim-sparkle"><path d="M 205 235 Q 205 250 190 250 Q 205 250 205 265 Q 205 250 220 250 Q 205 250 205 235 Z" fill="#FFFFFF"/></g></g><path d="M 230 330 Q 250 350 270 330" stroke="#0F172A" stroke-width="14" stroke-linecap="round" fill="none"/><g class="anim-hand-greeting"><g transform="translate(20, 15)" fill="#1D4ED8"><rect x="0" y="0" width="75" height="110" rx="37.5"/><rect x="-25" y="40" width="45" height="70" rx="22.5" transform="rotate(-35, -2.5, 75)"/></g><g fill="#FFFFFF"><rect x="0" y="0" width="75" height="110" rx="37.5"/><rect x="-25" y="40" width="45" height="70" rx="22.5" transform="rotate(-35, -2.5, 75)"/></g></g></g></g></g></g></svg>

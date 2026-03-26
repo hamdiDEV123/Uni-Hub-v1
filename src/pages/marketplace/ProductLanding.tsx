@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Shield, ShoppingCart } from "lucide-react";
@@ -10,7 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { callRpc } from "@/backend/rpc";
-import { adminManageMarketProduct, type AdminProductAction } from "@/backend/marketplaceApi";
+import {
+  addMarketCartItemSecure,
+  adminManageMarketProduct,
+  type AdminProductAction,
+  recordProductView,
+} from "@/backend/marketplaceApi";
 
 type ProductDetails = {
   id: string;
@@ -25,6 +30,12 @@ type ProductDetails = {
   moderation_status?: string;
   rejection_reason?: string | null;
 };
+
+function normalizeImageUrls(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string");
+  if (typeof value === "string" && value.trim()) return [value];
+  return [];
+}
 
 export default function ProductLanding() {
   const { id } = useParams();
@@ -48,12 +59,27 @@ export default function ProductLanding() {
         .single();
 
       if (error) throw error;
-      return data as ProductDetails;
+      return {
+        ...data,
+        image_url: normalizeImageUrls(data.image_url),
+        price: Number(data.price ?? 0),
+        stock_qty: Number(data.stock_qty ?? 0),
+      } as ProductDetails;
     },
   });
 
+  // record a view for analytics when the product is successfully loaded
+  useEffect(() => {
+    if (product && user?.id) {
+      // fire-and-forget, failures are non-critical
+      recordProductView(product.id, user.id).catch(() => {
+        /* ignore */
+      });
+    }
+  }, [product, user?.id]);
+
   const { data: isAdmin = false } = useQuery({
-    queryKey: ["is-admin", user?.id],
+    queryKey: ["is-admin", user?.id ?? ""],
     enabled: Boolean(user?.id),
     queryFn: async () => {
       if (!user?.id) return false;
@@ -70,44 +96,19 @@ export default function ProductLanding() {
 
   const addToCartMutation = useMutation({
     mutationFn: async () => {
-      if (!user?.id || !id) throw new Error("User or product missing");
-
-      const { data: existing, error: existingError } = await supabase
-        .from("market_cart_items")
-        .select("id,quantity")
-        .eq("user_id", user.id)
-        .eq("product_id", id)
-        .maybeSingle();
-
-      if (existingError) throw existingError;
-
-      if (existing?.id) {
-        const { error: updateError } = await supabase
-          .from("market_cart_items")
-          .update({ quantity: (existing.quantity ?? 0) + 1 })
-          .eq("id", existing.id);
-
-        if (updateError) throw updateError;
-        return;
-      }
-
-      const { error: insertError } = await supabase.from("market_cart_items").insert({
-        user_id: user.id,
-        product_id: id,
-        quantity: 1,
-      });
-      if (insertError) throw insertError;
+      if (!user?.id || !id) throw new Error("بيانات المستخدم أو المنتج غير مكتملة");
+      await addMarketCartItemSecure(id, 1);
     },
     onSuccess: () => {
       toast({
-        title: "Added to cart",
-        description: "Product was added to your cart.",
+        title: "تمت الإضافة للسلة",
+        description: "تمت إضافة المنتج بنجاح.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
-        title: "Cart update failed",
-        description: error?.message ?? "Could not add product to cart",
+        title: "فشل تحديث السلة",
+        description: error instanceof Error ? error.message : "لم يتم إضافة المنتج",
         variant: "destructive",
       });
     },
@@ -119,57 +120,57 @@ export default function ProductLanding() {
     },
     onSuccess: async (result) => {
       toast({
-        title: "Admin action applied",
+        title: "تم تنفيذ إجراء الأدمن",
         description: result,
       });
       await refetch();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
-        title: "Admin action failed",
-        description: error?.message ?? "Unexpected error",
+        title: "فشل إجراء الأدمن",
+        description: error instanceof Error ? error.message : "حدث خطأ غير متوقع",
         variant: "destructive",
       });
     },
   });
 
   if (!product) {
-    return <div className="py-10 text-sm text-muted-foreground">Loading product...</div>;
+    return <div className="py-10 text-sm text-muted-foreground">{"جاري تحميل المنتج..."}</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div dir="rtl" className="space-y-6 text-right">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">{product.title}</h1>
+        <h1 className="text-3xl font-black text-foreground">{product.title}</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="gap-2"
+            className="gap-2 interactive-lift border-navy/30"
             onClick={() =>
               navigate(
                 `/marketplace/checkout?product=${product.id}&subtotal=${Number(product.price)}`
               )
             }
           >
-            Buy now
+            {"اشترِ الآن"}
           </Button>
-          <Button className="gap-2" onClick={() => addToCartMutation.mutate()}>
+          <Button variant="cta" className="gap-2 interactive-lift" onClick={() => addToCartMutation.mutate()}>
             <ShoppingCart className="h-4 w-4" />
-            Add to cart
+            {"أضف للسلة"}
           </Button>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
-          <Card className="overflow-hidden">
+          <Card className="overflow-hidden rounded-2xl border-navy/20 shadow-hard">
             <CardContent className="p-0">
               <div className="relative aspect-[16/10] w-full bg-muted/30">
                 {activeImage ? (
-                  <img src={activeImage} alt={product.title} className="h-full w-full object-cover" />
+                  <img src={activeImage} alt={product.title} className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]" />
                 ) : (
                   <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                    No image available
+                    {"لا توجد صورة متاحة"}
                   </div>
                 )}
 
@@ -178,7 +179,7 @@ export default function ProductLanding() {
                     <Button
                       size="icon"
                       variant="secondary"
-                      className="absolute left-3 top-1/2 -translate-y-1/2"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 interactive-lift"
                       onClick={() => setImageIndex((current) => (current - 1 + images.length) % images.length)}
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -186,7 +187,7 @@ export default function ProductLanding() {
                     <Button
                       size="icon"
                       variant="secondary"
-                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 interactive-lift"
                       onClick={() => setImageIndex((current) => (current + 1) % images.length)}
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -201,8 +202,8 @@ export default function ProductLanding() {
               <button
                 key={`${image}-${idx}`}
                 type="button"
-                className={`overflow-hidden rounded border ${
-                  idx === imageIndex ? "border-primary" : "border-border"
+                className={`overflow-hidden rounded-xl border transition-all interactive-lift ${
+                  idx === imageIndex ? "border-primary shadow-hard-sm" : "border-border"
                 }`}
                 onClick={() => setImageIndex(idx)}
               >
@@ -212,71 +213,71 @@ export default function ProductLanding() {
           </div>
         </div>
 
-        <Card>
+        <Card className="rounded-2xl border-navy/20 shadow-hard">
           <CardHeader>
-            <CardTitle>Product Info</CardTitle>
+            <CardTitle>{"بيانات المنتج"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Price</span>
-              <span className="font-semibold">{Number(product.price).toFixed(2)} EGP</span>
+              <span className="text-muted-foreground">{"السعر"}</span>
+              <span className="font-semibold">{Number(product.price).toFixed(2)} {"ج.م"}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Category</span>
-              <span>{product.category || "N/A"}</span>
+              <span className="text-muted-foreground">{"التصنيف"}</span>
+              <span>{product.category || "-"}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Stock</span>
+              <span className="text-muted-foreground">{"المخزون"}</span>
               <span>{product.stock_qty ?? 0}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Listing</span>
-              <span>{product.listing_status || "unknown"}</span>
+              <span className="text-muted-foreground">{"حالة الإعلان"}</span>
+              <span>{product.listing_status || "غير محدد"}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Review</span>
-              <span>{product.moderation_status || "unknown"}</span>
+              <span className="text-muted-foreground">{"حالة المراجعة"}</span>
+              <span>{product.moderation_status || "غير محدد"}</span>
             </div>
 
             <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
-              <p className="mb-1 text-xs text-muted-foreground">Description</p>
-              <p>{product.description || "No description provided"}</p>
+              <p className="mb-1 text-xs text-muted-foreground">{"الوصف"}</p>
+              <p>{product.description || "لا يوجد وصف"}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {isAdmin && (
-        <Card className="border-primary/40">
+        <Card className="border-primary/40 rounded-2xl shadow-hard">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Admin moderation controls
+              {"تحكم الأدمن في المراجعة"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="admin-reason">Reason (required for reject)</Label>
+              <Label htmlFor="admin-reason">{"سبب القرار (مطلوب عند الرفض)"}</Label>
               <Input
                 id="admin-reason"
                 value={adminReason}
                 onChange={(event) => setAdminReason(event.target.value)}
-                placeholder="Add reason for moderation action"
+                placeholder={"أضف سبباً للإجراء"}
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => adminActionMutation.mutate("approve")}>Approve</Button>
-              <Button variant="secondary" onClick={() => adminActionMutation.mutate("reject")}>
-                Reject
+              <Button className="interactive-lift" onClick={() => adminActionMutation.mutate("approve")}>{"موافقة"}</Button>
+              <Button className="interactive-lift" variant="secondary" onClick={() => adminActionMutation.mutate("reject")}>
+                {"رفض"}
               </Button>
-              <Button variant="outline" onClick={() => adminActionMutation.mutate("archive")}>
-                Archive
+              <Button className="interactive-lift" variant="outline" onClick={() => adminActionMutation.mutate("archive")}>
+                {"أرشفة"}
               </Button>
-              <Button variant="outline" onClick={() => adminActionMutation.mutate("restore_activate")}>
-                Restore/Activate
+              <Button className="interactive-lift" variant="outline" onClick={() => adminActionMutation.mutate("restore_activate")}>
+                {"استعادة/تفعيل"}
               </Button>
-              <Button variant="destructive" onClick={() => adminActionMutation.mutate("delete_now")}>
-                Delete now
+              <Button className="interactive-lift" variant="destructive" onClick={() => adminActionMutation.mutate("delete_now")}>
+                {"حذف فوري"}
               </Button>
             </div>
           </CardContent>

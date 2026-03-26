@@ -1,11 +1,22 @@
-import { useEffect, useState } from 'react';
-import { 
-  ShoppingBag, Truck, Home, Trophy, Bell, LayoutDashboard, 
-  Shield, LogOut, User // ضفنا أيقونة User هنا ✅
-} from 'lucide-react';
-import { NavLink } from '@/components/NavLink';
-import { useAuth } from '@/lib/auth';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from "react";
+import {
+  ShoppingBag,
+  Truck,
+  Home,
+  Trophy,
+  Bell,
+  BookOpen,
+  LayoutDashboard,
+  Palette,
+  Shield,
+  LogOut,
+  User,
+  MessagesSquare,
+  NotebookPen,
+} from "lucide-react";
+import { NavLink } from "@/components/NavLink";
+import { useAuth } from "@/lib/auth";
+import { fetchProfileRoleById } from "@/backend/profileApi";
 import {
   Sidebar,
   SidebarContent,
@@ -16,21 +27,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar";
 
 const mainNav = [
-  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Profile', url: '/profile', icon: User }, // السطر ده اللي هينورلك صفحة البروفايل ✅
-  { title: 'Marketplace', url: '/marketplace', icon: ShoppingBag },
-  { title: 'Delivery', url: '/delivery', icon: Truck },
-  { title: 'Housing', url: '/housing', icon: Home },
-  { title: 'Sports Hub', url: '/sports', icon: Trophy },
-  { title: 'Notifications', url: '/notifications', icon: Bell },
+  { title: "\u0644\u0648\u062d\u0629 \u0627\u0644\u062a\u062d\u0643\u0645", url: "/dashboard", icon: LayoutDashboard },
+  { title: "\u0645\u062c\u062a\u0645\u0639 \u0627\u0644\u062c\u0627\u0645\u0639\u0629", url: "/campus-feed", icon: MessagesSquare },
+  { title: "\u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062e\u0635\u064a", url: "/profile", icon: User },
+  { title: "\u0627\u0644\u0633\u0648\u0642", url: "/marketplace", icon: ShoppingBag },
+  { title: "\u0627\u0644\u062a\u0648\u0635\u064a\u0644", url: "/delivery", icon: Truck },
+  { title: "\u0627\u0644\u0633\u0643\u0646", url: "/housing", icon: Home },
+  { title: "\u0627\u0644\u0631\u064a\u0627\u0636\u0629", url: "/sports", icon: Trophy },
+  { title: "\u0628\u0646\u0643 \u0627\u0644\u0645\u062d\u0627\u0636\u0631\u0627\u062a", url: "/study-hub", icon: BookOpen },
+  { title: "\u0645\u0633\u0627\u062d\u0629 \u0627\u0644\u0639\u0645\u0644", url: "/workspace", icon: NotebookPen },
+  { title: "\u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062a", url: "/notifications", icon: Bell },
 ];
 
 const adminNav = [
-  { title: 'Admin Marketplace', url: '/admin', icon: Shield },
-  { title: 'Admin Legacy', url: '/admin/legacy', icon: Shield },
+  { title: "لوحة الأدمن الرئيسية", url: "/admin", icon: Shield },
+  { title: "\u0646\u0638\u0627\u0645 \u0627\u0644\u062a\u0635\u0645\u064a\u0645", url: "/design-system", icon: Palette },
 ];
 
 export function AppSidebar() {
@@ -39,36 +53,32 @@ export function AppSidebar() {
 
   useEffect(() => {
     async function getProfile() {
-      if (user?.id) {
-        // بنستخدم (as any) هنا عشان نتجنب مشاكل الـ Types بكرة في العرض
-        const { data } = await (supabase.from('profiles') as any)
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        
-        if (data) setRole(data.role);
-      }
+      if (!user?.id) return;
+      const nextRole = await fetchProfileRoleById(user.id);
+      setRole(nextRole);
     }
-    getProfile();
+
+    void getProfile();
   }, [user]);
 
-  const isAdmin = role === 'admin';
+  const isAdmin = role === "admin";
 
   return (
-    <Sidebar className="border-r border-border/50 bg-sidebar">
-      <div className="p-5 border-b border-border/50">
-        <h1 className="text-xl font-bold tracking-tight">
-          <span className="neon-text-blue">Uni</span>
-          <span className="text-foreground">Hub</span>
-        </h1>
-        <p className="text-xs text-muted-foreground mt-0.5 font-mono uppercase tracking-tighter">
-          {isAdmin ? 'ADMIN CONTROL PANEL' : 'UNIVERSITY SUPER-APP'}
+    <Sidebar side="right" className="z-30 border-l border-navy/20 bg-card/90 shadow-hard backdrop-blur-xl supports-[backdrop-filter]:bg-card/80" dir="rtl">
+      <div className="sticky top-0 z-10 border-b border-navy/20 bg-card p-5 backdrop-blur-xl supports-[backdrop-filter]:bg-card/90">
+        <img src="/UniHup-StudentLogo-markOnly-creativePurple.svg" alt="UniHub Logo" className="h-12 w-auto mx-auto" />
+        <p className="mt-2 text-center font-mono text-xs tracking-tighter text-muted-foreground">
+          {isAdmin
+            ? "لوحة الأدمن الرئيسية"
+            : "منصة الطالب الجامعي"}
         </p>
       </div>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground/70 text-[10px] uppercase tracking-widest">Modules</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[10px] tracking-widest text-muted-foreground/70">
+            {"\u0627\u0644\u0648\u062d\u062f\u0627\u062a"}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNav.map((item) => (
@@ -76,11 +86,11 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-                      activeClassName="text-primary bg-primary/10 neon-glow-blue"
+                        className="flex flex-row-reverse items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold text-muted-foreground transition-all pressable hover:bg-primary/10 hover:text-primary"
+                        activeClassName="bg-primary/10 text-primary shadow-hard-sm border border-primary/30"
                     >
-                      <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
+                      <item.icon className="h-4 w-4" />
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -91,7 +101,9 @@ export function AppSidebar() {
 
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-orange-500 text-[10px] uppercase tracking-widest">Admin Management</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[10px] tracking-widest text-primary">
+              {"\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0645\u0646\u0635\u0629"}
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminNav.map((item) => (
@@ -99,11 +111,11 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-                        activeClassName="text-secondary bg-secondary/10 neon-glow-orange"
+                        className="flex flex-row-reverse items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold text-muted-foreground transition-all pressable hover:bg-primary/10 hover:text-primary"
+                        activeClassName="bg-primary/10 text-primary shadow-hard-sm border border-primary/30"
                       >
-                        <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
+                        <item.icon className="h-4 w-4" />
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -114,17 +126,16 @@ export function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/50 p-3">
-        {/* ممكن هنا تضيف اسم المستخدم بشكل شيك قبل زرار الخروج */}
-        <div className="px-3 py-2 mb-2 text-[10px] text-muted-foreground truncate font-mono">
-          Logged in as: {user?.email?.split('@')[0]}
+      <SidebarFooter className="border-t border-navy/20 p-3">
+        <div className="mb-2 truncate rounded-xl border border-navy/20 bg-muted/20 px-3 py-2 font-mono text-[10px] text-muted-foreground shadow-hard-sm">
+          {"\u0627\u0644\u062d\u0633\u0627\u0628:"} {user?.email?.split("@")[0]}
         </div>
         <button
           onClick={signOut}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all w-full"
+          className="flex w-full flex-row-reverse items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-destructive transition-all pressable hover:bg-destructive/10 hover:text-destructive"
         >
+          <span>{"\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062e\u0631\u0648\u062c"}</span>
           <LogOut className="h-4 w-4" />
-          <span>Sign Out</span>
         </button>
       </SidebarFooter>
     </Sidebar>

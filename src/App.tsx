@@ -1,32 +1,80 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { GlowingCursor } from "@/components/ui/GlowingCursor";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/auth";
-import { AppLayout } from "@/components/layout/AppLayout"; // الربط هنا بقى سليم ✅
+import { AppLayout } from "@/components/layout/AppLayout";
+import { RouteErrorBoundary } from "@/components/errors/RouteErrorBoundary";
+import { useQuery } from "@tanstack/react-query";
+import { callRpc } from "@/backend/rpc";
+import { getReleaseFlags } from "@/lib/releaseFlags";
 
-import Index from "./pages/Index";
-import Marketplace from "./pages/Marketplace";
-import Dashboard from "./pages/Dashboard";
-import Delivery from "./pages/Delivery";
-import Housing from "./pages/Housing";
-import Sports from "./pages/Sports";
-import Notifications from "./pages/Notifications";
-import AdminLegacy from "./pages/Admin";
-import Profile from "./pages/Profile"; 
-import NotFound from "./pages/NotFound";
-import MarketplaceV2 from "./pages/marketplace/MarketplaceV2";
-import ProductLanding from "./pages/marketplace/ProductLanding";
-import MarketplaceCheckoutV2 from "./pages/marketplace/MarketplaceCheckoutV2";
-import AdminMarketplaceConsoleV2 from "./pages/admin/AdminMarketplaceConsoleV2";
+const Index = lazy(() => import("./pages/Index"));
+const DashboardHome = lazy(() => import("./pages/DashboardHome"));
+const CampusFeed = lazy(() => import("./pages/CampusFeed"));
+const Delivery = lazy(() => import("./pages/Delivery"));
+const Housing = lazy(() => import("./pages/Housing"));
+const Sports = lazy(() => import("./pages/Sports"));
+const StudyHub = lazy(() => import("./pages/Study Hub"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Profile = lazy(() => import("./pages/ProfileV2"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Chat = lazy(() => import("./pages/chat"));
+const Workspace = lazy(() => import("./pages/Workspace"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Marketplace = lazy(() => import("./pages/marketplace/MarketplaceV2"));
+const MarketplaceCheckout = lazy(() => import("./pages/marketplace/MarketplaceCheckoutV2"));
+const MarketplaceProduct = lazy(() => import("./pages/marketplace/ProductLanding"));
+const MarketplaceOrders = lazy(() => import("./pages/marketplace/MarketplaceOrdersV2"));
+const AdminHome = lazy(() => import("./pages/admin/AdminHome"));
+const AdminMarketplaceConsole = lazy(() => import("./pages/admin/AdminMarketplaceConsoleV2"));
+const AdminStudyHubConsole = lazy(() => import("./pages/admin/AdminStudyHubConsole"));
+const AdminCampusFeedConsole = lazy(() => import("./pages/admin/AdminCampusFeedConsole"));
+const AdminLegacy = lazy(() => import("./pages/Admin"));
+const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 
 const queryClient = new QueryClient();
+
+const RouteLoading = () => (
+  <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground" dir="rtl">
+    {"جاري تحميل الصفحة..."}
+  </div>
+);
+
+function FeatureRoute({ enabled, fallback, children }: { enabled: boolean; fallback: React.ReactNode; children: React.ReactNode }) {
+  if (!enabled) return <>{fallback}</>;
+  return <>{children}</>;
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/auth" replace />;
+  return (
+    <AppLayout>
+      {children}
+    </AppLayout>
+  );
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { data: isAdmin, isLoading } = useQuery({
+    queryKey: ["is-admin-route", user?.id ?? ""],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return false;
+      return callRpc("has_role", { _user_id: user.id, _role: "admin" });
+    },
+  });
+
+  if (loading || isLoading) return null;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!isAdmin) return <Navigate to="/dashboard" replace />;
+
   return <AppLayout>{children}</AppLayout>;
 }
 
@@ -35,25 +83,122 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <GlowingCursor />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/marketplace" element={<ProtectedRoute><MarketplaceV2 /></ProtectedRoute>} />
-            <Route path="/marketplace/legacy" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-            <Route path="/marketplace/product/:id" element={<ProtectedRoute><ProductLanding /></ProtectedRoute>} />
-            <Route path="/marketplace/checkout" element={<ProtectedRoute><MarketplaceCheckoutV2 /></ProtectedRoute>} />
-            <Route path="/delivery" element={<ProtectedRoute><Delivery /></ProtectedRoute>} />
-            <Route path="/housing" element={<ProtectedRoute><Housing /></ProtectedRoute>} />
-            <Route path="/sports" element={<ProtectedRoute><Sports /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><AdminMarketplaceConsoleV2 /></ProtectedRoute>} />
-            <Route path="/admin/marketplace" element={<ProtectedRoute><AdminMarketplaceConsoleV2 /></ProtectedRoute>} />
-            <Route path="/admin/legacy" element={<ProtectedRoute><AdminLegacy /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          {(() => {
+            const flags = getReleaseFlags();
+            return (
+          <Suspense fallback={<RouteLoading />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+              <Route path="/campus-feed" element={<ProtectedRoute><CampusFeed /></ProtectedRoute>} />
+              <Route
+                path="/marketplace"
+                element={
+                  <ProtectedRoute>
+                    <RouteErrorBoundary routeName="السوق">
+                      <Marketplace />
+                    </RouteErrorBoundary>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/marketplace/product/:id"
+                element={
+                  <ProtectedRoute>
+                    <RouteErrorBoundary routeName="تفاصيل المنتج">
+                      <MarketplaceProduct />
+                    </RouteErrorBoundary>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/marketplace/checkout"
+                element={
+                  <FeatureRoute
+                    enabled={flags.marketplaceCheckoutEnabled}
+                    fallback={<Navigate to="/marketplace" replace />}
+                  >
+                    <ProtectedRoute>
+                      <RouteErrorBoundary routeName="إتمام الشراء">
+                        <MarketplaceCheckout />
+                      </RouteErrorBoundary>
+                    </ProtectedRoute>
+                  </FeatureRoute>
+                }
+              />
+              <Route
+                path="/marketplace/orders"
+                element={
+                  <FeatureRoute
+                    enabled={flags.marketplaceOrdersEnabled}
+                    fallback={<Navigate to="/marketplace" replace />}
+                  >
+                    <ProtectedRoute>
+                      <RouteErrorBoundary routeName="الطلبات">
+                        <MarketplaceOrders />
+                      </RouteErrorBoundary>
+                    </ProtectedRoute>
+                  </FeatureRoute>
+                }
+              />
+              <Route path="/delivery" element={<ProtectedRoute><Delivery /></ProtectedRoute>} />
+              <Route path="/housing" element={<ProtectedRoute><Housing /></ProtectedRoute>} />
+              <Route path="/sports" element={<ProtectedRoute><Sports /></ProtectedRoute>} />
+              <Route path="/study-hub" element={<ProtectedRoute><StudyHub /></ProtectedRoute>} />
+              <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+              <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+              <Route path="/workspace" element={<ProtectedRoute><Workspace /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/design-system" element={<AdminRoute><DesignSystem /></AdminRoute>} />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <RouteErrorBoundary routeName="لوحة الأدمن الرئيسية">
+                      <AdminHome />
+                    </RouteErrorBoundary>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/marketplace"
+                element={
+                  <AdminRoute>
+                    <RouteErrorBoundary routeName="لوحة إدارة السوق">
+                      {flags.adminMarketplaceV2Enabled ? <AdminMarketplaceConsole /> : <AdminLegacy />}
+                    </RouteErrorBoundary>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/study-hub"
+                element={
+                  <AdminRoute>
+                    <RouteErrorBoundary routeName="لوحة إدارة بنك المحاضرات">
+                      <AdminStudyHubConsole />
+                    </RouteErrorBoundary>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/campus-feed"
+                element={
+                  <AdminRoute>
+                    <RouteErrorBoundary routeName="لوحة إدارة مجتمع الجامعة">
+                      <AdminCampusFeedConsole />
+                    </RouteErrorBoundary>
+                  </AdminRoute>
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+            );
+          })()}
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
