@@ -38,7 +38,7 @@ const mainNav = [
   { title: "\u0627\u0644\u0633\u0643\u0646", url: "/housing", icon: Home },
   { title: "\u0627\u0644\u0631\u064a\u0627\u0636\u0629", url: "/sports", icon: Trophy },
   { title: "\u0628\u0646\u0643 \u0627\u0644\u0645\u062d\u0627\u0636\u0631\u0627\u062a", url: "/study-hub", icon: BookOpen },
-  { title: "\u0645\u0633\u0627\u062d\u0629 \u0627\u0644\u0639\u0645\u0644", url: "/workspace", icon: NotebookPen },
+  { title: "\u0646\u0638\u0627\u0645 \u062d\u064a\u0627\u062a\u064a", url: "/workspace", icon: NotebookPen },
   { title: "\u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062a", url: "/notifications", icon: Bell },
 ];
 
